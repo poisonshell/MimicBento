@@ -336,6 +336,7 @@ export default function BlockEditModal({
                   {/* Current image preview */}
                   {stringValue && field.accept?.includes('image') && (
                     <div className="relative">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
                         src={stringValue}
                         alt="Preview"
