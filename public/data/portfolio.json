@@ -1,0 +1,287 @@
+{
+  "profile": {
+    "name": "John DOO",
+    "bio": "hello world ",
+    "avatar": "/uploads/1750705129199-51fcef2251c0fcd1576e6f8d5a8fc102.jpg"
+  },
+  "blocks": [
+    {
+      "id": "PXZNcchUehseo3m6",
+      "type": "link",
+      "title": "Personal Website",
+      "size": "wide",
+      "position": {
+        "x": 0,
+        "y": 1
+      },
+      "content": {
+        "url": "https://johndoe.dev",
+        "description": "johndoe.dev"
+      }
+    },
+    {
+      "id": "oLKGuzjF11NMNQea",
+      "type": "photo",
+      "title": "CTO",
+      "size": "small",
+      "position": {
+        "x": 0,
+        "y": 4
+      },
+      "content": {
+        "url": "https://picsum.photos/seed/work1/400/400",
+        "href": "#"
+      }
+    },
+    {
+      "id": "NG9vaPmxDtTrGx9Z",
+      "type": "photo",
+      "title": "CEO",
+      "size": "small",
+      "position": {
+        "x": 1,
+        "y": 4
+      },
+      "content": {
+        "url": "https://picsum.photos/seed/work2/400/400",
+        "href": "#"
+      }
+    },
+    {
+      "id": "aif62Qmzf1zCUQOs",
+      "type": "photo",
+      "title": "Head of R&D",
+      "size": "small",
+      "position": {
+        "x": 2,
+        "y": 4
+      },
+      "content": {
+        "url": "https://picsum.photos/seed/work3/400/400"
+      }
+    },
+    {
+      "id": "enl8eAqzSgRdtrfa",
+      "type": "photo",
+      "title": "CTO",
+      "size": "small",
+      "position": {
+        "x": 3,
+        "y": 4
+      },
+      "content": {
+        "url": "https://picsum.photos/seed/work4/400/400"
+      }
+    },
+    {
+      "id": "r2pE2XWMaF3SL2wQ",
+      "type": "link",
+      "title": "Another Project",
+      "size": "small",
+      "position": {
+        "x": 0,
+        "y": 6
+      },
+      "content": {
+        "url": "https://github.com/johndoe/another-project",
+        "description": "github.com"
+      }
+    },
+    {
+      "id": "9HmxVKiV0z1pRODE",
+      "type": "link",
+      "title": "VSCode Extension",
+      "size": "small",
+      "position": {
+        "x": 1,
+        "y": 6
+      },
+      "content": {
+        "url": "https://github.com/johndoe/vscode-extension",
+        "description": "github.com"
+      }
+    },
+    {
+      "id": "8wH8kksxdHnRs7vg",
+      "type": "note",
+      "title": "\"And on, and off, and on, and off, and on, and off, and on, and off, and on, and off.\" — Neil Hilborn",
+      "size": "tall",
+      "position": {
+        "x": 1,
+        "y": 7
+      },
+      "content": {
+        "text": ""
+      }
+    },
+    {
+      "id": "B3Amz1VCa2HM2zpe",
+      "type": "photo",
+      "title": "KobaFlight",
+      "size": "tall",
+      "position": {
+        "x": 3,
+        "y": 7
+      },
+      "content": {
+        "url": "https://picsum.photos/seed/project1/400/800"
+      }
+    },
+    {
+      "id": "gjJcprhSUdxOBCG0",
+      "type": "photo",
+      "title": "BasOlhuvi",
+      "size": "tall",
+      "position": {
+        "x": 2,
+        "y": 7
+      },
+      "content": {
+        "url": "https://picsum.photos/seed/project2/400/800"
+      }
+    },
+    {
+      "id": "tgvjnYT9M2zOVQlm",
+      "type": "link",
+      "title": "Certifications",
+      "size": "wide",
+      "position": {
+        "x": 0,
+        "y": 10
+      },
+      "content": {
+        "url": "https://www.credly.com/users/johndoe",
+        "description": "credly.com"
+      }
+    },
+    {
+      "id": "block-1750658138728-nvmuktczx",
+      "type": "photo",
+      "title": "Me",
+      "content": {
+        "url": "/uploads/1750658148374-adec7196759ee45a8c427d023b59640d.png",
+        "alt": "",
+        "position": "center"
+      },
+      "size": "small",
+      "position": {
+        "x": 2,
+        "y": 6
+      }
+    },
+    {
+      "id": "block-1750675160606-ntjfltekr",
+      "type": "map",
+      "title": "New Block",
+      "content": {
+        "location": "New York",
+        "address": ""
+      },
+      "size": "wide",
+      "position": {
+        "x": 0,
+        "y": 2
+      }
+    },
+    {
+      "id": "block-1750706282057-oa9x23466",
+      "type": "photo",
+      "title": "Home",
+      "content": {
+        "url": "/uploads/1750706298411-539a02ab65e96dec1c254830793b856c.jpg",
+        "alt": "",
+        "position": "center",
+        "href": ""
+      },
+      "size": "large",
+      "position": {
+        "x": 2,
+        "y": 0
+      }
+    },
+    {
+      "id": "block-1750712017007-2t7thasde",
+      "type": "social",
+      "title": "YouTube",
+      "content": {
+        "platform": "youtube",
+        "url": "sdfsdf",
+        "username": "sdfsf",
+        "displayName": "",
+        "description": ""
+      },
+      "size": "small",
+      "position": {
+        "x": 3,
+        "y": 2
+      }
+    },
+    {
+      "id": "block-1750713884741-406hxkpzx",
+      "type": "social",
+      "title": "Facebook",
+      "content": {
+        "platform": "facebook",
+        "url": "dssdf",
+        "username": "dsfdf",
+        "displayName": "",
+        "description": ""
+      },
+      "size": "small",
+      "position": {
+        "x": 1,
+        "y": 0
+      }
+    },
+    {
+      "id": "block-1750738424662-vx7nov0d8",
+      "type": "section-header",
+      "title": "MoP",
+      "content": {
+        "subtitle": "",
+        "textAlign": "left",
+        "textSize": "medium",
+        "color": "gray-800"
+      },
+      "size": "section-header",
+      "position": {
+        "x": 0,
+        "y": 3
+      }
+    },
+    {
+      "id": "block-1750738446278-gdjujtugj",
+      "type": "section-header",
+      "title": "",
+      "content": {
+        "title": "Projects",
+        "subtitle": "",
+        "textAlign": "left",
+        "textSize": "medium",
+        "color": "gray-800"
+      },
+      "size": "section-header",
+      "position": {
+        "x": 0,
+        "y": 5
+      }
+    },
+    {
+      "id": "block-1750739830311-mn7lt7u2y",
+      "type": "social",
+      "title": "X",
+      "content": {
+        "platform": "x",
+        "url": "@poisonshell",
+        "username": "@poisonshell",
+        "displayName": "",
+        "description": ""
+      },
+      "size": "small",
+      "position": {
+        "x": 0,
+        "y": 0
+      }
+    }
+  ]
+}
