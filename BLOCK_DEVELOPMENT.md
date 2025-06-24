@@ -15,7 +15,7 @@ The MimicBento project uses a **complete plugin-based architecture** that allows
 **✅ All core blocks have been migrated to this system**  
 **✅ No legacy forms remain**  
 **✅ Zero modification needed for extensions**
-**✅ Modern Lucide React icon system**
+**✅ Modern React Icons system (Feather + Simple Icons)**
 **✅ Beautiful AddBlockModal UI with category organization**
 
 ## Block Structure
@@ -43,7 +43,7 @@ function MyCustomBlockComponent({ block, isMobile, isAdmin }: BlockComponentProp
 const config: BlockConfig = {
   type: 'my-custom-block',           // Unique identifier
   name: 'My Custom Block',           // Display name
-  icon: 'Palette',                   // Lucide React icon name (recommended)
+  icon: 'FiPalette',                 // React Icons Feather icon name (recommended)
   description: 'A custom block with full form support',     // Description for add modal
   defaultSize: 'small',             // Default size when created
   supportedSizes: ['small', 'medium', 'large'], // Available sizes
@@ -118,25 +118,25 @@ export default MyCustomBlockComponent;
 
 ## Icon System
 
-### Lucide React Icons (Recommended)
+### React Icons (Feather Icons) - Recommended
 
-The system now uses **Lucide React** for consistent, beautiful icons. Use icon names as strings:
+The system now uses **React Icons** with Feather Icons for consistent, beautiful UI icons. Use icon names as strings:
 
 ```typescript
-// ✅ RECOMMENDED: Lucide React icon names
-icon: 'Calendar'        // Calendar icon
-icon: 'Database'        // Database icon  
-icon: 'Gamepad2'        // Gaming controller icon
-icon: 'Camera'          // Camera icon
-icon: 'Music'           // Music note icon
-icon: 'Map'             // Map icon
-icon: 'Users'           // People icon
-icon: 'FileText'        // Document icon
-icon: 'Video'           // Video icon
-icon: 'Link'            // Link icon
-icon: 'Clock'           // Clock icon
-icon: 'Image'           // Image icon
-icon: 'Layout'          // Layout/section icon
+// ✅ RECOMMENDED: React Icons Feather icon names
+icon: 'FiCalendar'      // Calendar icon
+icon: 'FiDatabase'      // Database icon  
+icon: 'FiGamepad2'      // Gaming controller icon
+icon: 'FiCamera'        // Camera icon
+icon: 'FiMusic'         // Music note icon
+icon: 'FiMap'           // Map icon
+icon: 'FiUsers'         // People icon
+icon: 'FiFileText'      // Document icon
+icon: 'FiVideo'         // Video icon
+icon: 'FiLink'          // Link icon
+icon: 'FiClock'         // Clock icon
+icon: 'FiImage'         // Image icon
+icon: 'FiLayout'        // Layout/section icon
 ```
 
 ### Icon Compatibility
@@ -144,8 +144,8 @@ icon: 'Layout'          // Layout/section icon
 The icon system supports **multiple formats** for maximum compatibility:
 
 ```typescript
-// Option A: Lucide React strings (recommended)
-icon: 'Calendar'        // Shows beautiful Lucide icon
+// Option A: React Icons Feather strings (recommended)
+icon: 'FiCalendar'      // Shows beautiful Feather icon
 
 // Option B: Emoji (legacy support)
 icon: '🎮'             // Still works, shows emoji
@@ -158,45 +158,45 @@ icon: MyIconComponent   // Any React component
 ### Automatic Icon Mapping
 
 Icons are automatically mapped in the AddBlockModal:
-- **String names** → Lucide React components
+- **String names** → React Icons Feather components
 - **Unrecognized strings** → Default fallback icon
 - **React components** → Used directly
 - **Emojis** → Displayed as fallback
 
-### Popular Lucide Icons for Blocks
+### Popular React Icons (Feather) for Blocks
 
 ```typescript
 // Content blocks
-icon: 'FileText'        // Text/note blocks
-icon: 'Link'            // Link blocks
-icon: 'Image'           // Photo blocks
-icon: 'Video'           // Video blocks
+icon: 'FiFileText'      // Text/note blocks
+icon: 'FiLink'          // Link blocks
+icon: 'FiImage'         // Photo blocks
+icon: 'FiVideo'         // Video blocks
 
 // Social blocks
-icon: 'Users'           // Social profiles
-icon: 'MessageCircle'   // Chat/messaging
-icon: 'Share2'          // Sharing blocks
+icon: 'FiUsers'         // Social profiles
+icon: 'FiMessageCircle' // Chat/messaging
+icon: 'FiShare2'        // Sharing blocks
 
 // Utility blocks
-icon: 'Clock'           // Time/clock blocks
-icon: 'Calendar'        // Calendar blocks
-icon: 'Map'             // Location blocks
-icon: 'Settings'        // Configuration blocks
+icon: 'FiClock'         // Time/clock blocks
+icon: 'FiCalendar'      // Calendar blocks
+icon: 'FiMap'           // Location blocks
+icon: 'FiSettings'      // Configuration blocks
 
 // Media blocks
-icon: 'Music'           // Audio/music blocks
-icon: 'Play'            // Media player blocks
-icon: 'Headphones'      // Audio blocks
+icon: 'FiMusic'         // Audio/music blocks
+icon: 'FiPlay'          // Media player blocks
+icon: 'FiHeadphones'    // Audio blocks
 
 // Data blocks
-icon: 'BarChart3'       // Analytics blocks
-icon: 'Database'        // Data blocks
-icon: 'TrendingUp'      // Metrics blocks
+icon: 'FiBarChart'      // Analytics blocks
+icon: 'FiDatabase'      // Data blocks
+icon: 'FiTrendingUp'    // Metrics blocks
 
 // Custom blocks
-icon: 'Puzzle'          // Plugin blocks
-icon: 'Zap'             // Action blocks
-icon: 'Star'            // Featured blocks
+icon: 'FiPackage'       // Plugin blocks
+icon: 'FiZap'           // Action blocks
+icon: 'FiStar'          // Featured blocks
 ```
 
 ## Configuration Options
@@ -207,7 +207,7 @@ icon: 'Star'            // Featured blocks
 interface BlockConfig {
   type: string;                    // Unique block type identifier
   name: string;                    // Display name in add modal
-  icon: string | React.ReactNode;  // Icon - use Lucide name string (recommended)
+  icon: string | React.ReactNode;  // Icon - use React Icons Feather name string (recommended)
   description: string;             // Description in add modal
   defaultSize: BlockSize;          // Default size when creating
   supportedSizes?: BlockSize[];    // Available sizes (optional)
@@ -727,9 +727,9 @@ The icon system is **100% backward compatible** for extensions:
 ```typescript
 // ✅ All of these work perfectly:
 
-// New: Lucide React strings (recommended)
-icon: 'Calendar'        // → Beautiful Lucide icon
-icon: 'Database'        // → Professional icon
+// New: React Icons Feather strings (recommended)
+icon: 'FiCalendar'      // → Beautiful Feather icon
+icon: 'FiDatabase'      // → Professional icon
 
 // Legacy: Emojis (still supported)
 icon: '🎮'             // → Still displays
@@ -742,15 +742,15 @@ icon: MyIconComponent   // → Any React component
 
 **Benefits for extension developers:**
 - ✅ **No breaking changes** - existing blocks continue working
-- ✅ **Progressive enhancement** - can upgrade to Lucide icons gradually
+- ✅ **Progressive enhancement** - can upgrade to React Icons gradually
 - ✅ **Automatic fallbacks** - unrecognized icons show default
-- ✅ **No dependencies** - extensions don't need to install Lucide React
+- ✅ **No dependencies** - extensions don't need to install React Icons
 - ✅ **Future-proof** - new icons can be added easily
 
 ### Dependencies
 
 Extensions using the icon system don't need to:
-- Install Lucide React themselves
+- Install React Icons themselves
 - Import any icon libraries  
 - Handle icon mapping logic
 - Worry about compatibility
@@ -761,10 +761,10 @@ The system handles everything automatically!
 
 ### Icon Selection
 
-1. **Use Lucide names** for consistency: `'Calendar'`, `'Database'`, `'Settings'`
+1. **Use React Icons Feather names** for consistency: `'FiCalendar'`, `'FiDatabase'`, `'FiSettings'`
 2. **Choose semantic icons** that clearly represent the block's purpose
 3. **Test icon appearance** in both light and dark contexts
-4. **Check icon availability** in Lucide React documentation
+4. **Check icon availability** in React Icons Feather documentation
 5. **Provide fallback descriptions** in block configuration
 
 ### Styling Guidelines
@@ -798,6 +798,200 @@ The system handles everything automatically!
 4. **Include ARIA labels** for complex interactions
 5. **Ensure color contrast** meets accessibility standards
 
+## Type Safety & Best Practices
+
+The codebase has been enhanced with comprehensive type safety while maintaining flexibility for dynamic content:
+
+### Core Type Improvements
+
+#### 1. **Block Content Typing**
+- Block content uses `Record<string, unknown>` for flexibility
+- Type guards are used for safe property access
+- Form fields use `unknown` for maximum compatibility
+
+```typescript
+// Safe content access pattern
+const url = typeof content.url === 'string' ? content.url : '';
+const title = typeof content.title === 'string' ? content.title : '';
+const isEnabled = typeof content.enabled === 'boolean' ? content.enabled : false;
+```
+
+#### 2. **Form Field Value Types**
+- Form values use `unknown` to handle various input types
+- Type checking at point of use prevents runtime errors
+- Proper fallbacks for undefined values
+
+```typescript
+// Form field type checking
+const updateContent = (field: string, value: unknown) => {
+  if (typeof value === 'string' && value.length > 0) {
+    // Safe to use as string
+  }
+};
+```
+
+#### 3. **Admin Page Type Safety**
+- Portfolio data properly typed as `BentoData | null`
+- Block operations use explicit `BentoBlock` typing
+- Error boundaries for undefined states
+
+```typescript
+setPortfolioData((prev: BentoData | null) => {
+  if (!prev) return prev;
+  return {
+    ...prev,
+    blocks: prev.blocks.map((block: BentoBlock) => 
+      block.id === blockId ? updatedBlock : block
+    ),
+  };
+});
+```
+
+### Type Guard Patterns
+
+Use these patterns throughout the codebase for safe type checking:
+
+```typescript
+// String type checking
+const safeString = typeof value === 'string' ? value : '';
+
+// Number type checking  
+const safeNumber = typeof value === 'number' ? value : 0;
+
+// Boolean type checking
+const safeBool = typeof value === 'boolean' ? value : false;
+
+// Object property checking
+if (typeof content.platform === 'string') {
+  // Safe to use content.platform as string
+}
+
+// Array checking
+if (Array.isArray(content.items)) {
+  // Safe to use content.items as array
+}
+```
+
+### Block Component Best Practices
+
+#### 1. **Content Extraction**
+Always extract and validate content properties at the top of components:
+
+```typescript
+function MyBlockComponent({ block }: BlockComponentProps) {
+  const { content, title } = block;
+  
+  // Extract and validate all needed properties
+  const url = typeof content.url === 'string' ? content.url : '';
+  const text = typeof content.text === 'string' ? content.text : '';
+  const count = typeof content.count === 'number' ? content.count : 0;
+  
+  // Rest of component logic...
+}
+```
+
+#### 2. **Preview Component Typing**
+Preview components should expect flexible content:
+
+```typescript
+function MyBlockPreviewComponent({ 
+  content 
+}: { 
+  content: Record<string, unknown> 
+}) {
+  const title = typeof content.title === 'string' ? content.title : 'Untitled';
+  // Safe rendering logic...
+}
+```
+
+#### 3. **Error Boundaries**
+Always provide fallbacks for missing or invalid content:
+
+```typescript
+if (!url) {
+  return (
+    <div className="flex items-center justify-center h-full bg-gray-100 text-gray-500">
+      <span>Configure this block</span>
+    </div>
+  );
+}
+```
+
+### Form Handling Best Practices
+
+#### 1. **Dynamic Form Fields**
+Handle form values safely with type checking:
+
+```typescript
+const currentValue = typeof content[field.key] === 'string' 
+  ? content[field.key] 
+  : field.defaultValue || '';
+```
+
+#### 2. **Value Updates**
+Ensure type safety when updating values:
+
+```typescript
+const updateContent = (field: string, value: unknown) => {
+  setBlockData(prev => ({
+    ...prev,
+    content: {
+      ...(prev.content as Record<string, unknown>),
+      [field]: value,
+    },
+  }));
+};
+```
+
+### Error Handling Patterns
+
+#### 1. **Validation Functions**
+Use defensive programming for validation:
+
+```typescript
+const validateBlockData = (data: Record<string, unknown>) => {
+  if (typeof data.url !== 'string' || !data.url) {
+    return 'URL is required';
+  }
+  return null;
+};
+```
+
+#### 2. **Runtime Checks**
+Check types at runtime before using values:
+
+```typescript
+// Before using in JSX
+{typeof content.title === 'string' && (
+  <h2>{content.title}</h2>
+)}
+
+// Before passing to functions
+if (typeof content.count === 'number') {
+  processCount(content.count);
+}
+```
+
+### Migration Guidelines
+
+When updating existing components:
+
+1. **Add type guards** for all content property access
+2. **Extract content properties** at component start  
+3. **Provide fallbacks** for undefined/invalid values
+4. **Use explicit type checking** instead of truthy checks
+5. **Test with invalid/missing data** to ensure robustness
+
+### Benefits
+
+- **Runtime Safety**: Prevents crashes from undefined properties
+- **Developer Experience**: Clear error messages and predictable behavior  
+- **Flexibility**: Supports dynamic content while maintaining safety
+- **Maintainability**: Easier to debug and extend functionality
+- **Third-party Compatibility**: Works with external block types
+
+This approach ensures the block system remains flexible for extensibility while providing robust type safety for core functionality.
+
 ## Examples
 
 See the existing blocks for reference implementations:
@@ -807,12 +1001,12 @@ See the existing blocks for reference implementations:
 - `src/components/blocks/SocialBlock.tsx` - Complex block with platform selection
 - `src/components/blocks/MapBlock.tsx` - Interactive block with external API
 
-**All examples now use Lucide React icons:**
-- ClockBlock: `icon: 'Clock'`
-- LinkBlock: `icon: 'Link'`  
-- PhotoBlock: `icon: 'Image'`
-- SocialBlock: `icon: 'Users'`
-- MapBlock: `icon: 'Map'`
+**All examples now use React Icons Feather icons:**
+- ClockBlock: `icon: 'FiClock'`
+- LinkBlock: `icon: 'FiLink'`  
+- PhotoBlock: `icon: 'FiImage'`
+- SocialBlock: `icon: 'FiUsers'`
+- MapBlock: `icon: 'FiMap'`
 
 ## Testing
 
@@ -855,7 +1049,7 @@ test('validates configuration form', () => {
 
 test('uses correct icon', () => {
   const { config } = blockModule;
-  expect(config.icon).toBe('Palette'); // Lucide React icon name
+  expect(config.icon).toBe('FiPalette'); // React Icons Feather icon name
 });
 ```
 
@@ -925,26 +1119,26 @@ When creating external blocks for distribution:
 
 **All core blocks have been migrated to this system:**
 ✅ ClockBlock, LinkBlock, NoteBlock, MusicBlock, VideoBlock, PhotoBlock, SocialBlock, MapBlock
-✅ All using Lucide React icons
+✅ All using React Icons Feather icons
 
 **Legacy code removed:**
 ❌ No hardcoded forms remain
 ❌ No switch statements for block types
 ❌ No manual form implementations needed
-❌ No emoji icons in core blocks (upgraded to Lucide)
+❌ No emoji icons in core blocks (upgraded to React Icons Feather)
 
 **Extension benefits:**
 🚀 Zero modification required for new blocks
 🚀 15+ field types supported out of the box
 🚀 Advanced features like dependencies and custom components
 🚀 Automatic form generation and validation
-🚀 Beautiful Lucide React icon system
+🚀 Beautiful React Icons Feather icon system
 🚀 Modern AddBlockModal with categories
 🚀 Complete type safety with TypeScript
 🚀 100% backward compatibility for existing extensions
 
 **Recent improvements:**
-✨ Lucide React icon system implementation
+✨ React Icons Feather icon system implementation
 ✨ Beautiful AddBlockModal redesign with categories
 ✨ Enhanced form UI with modern styling
 ✨ Improved file upload experience
@@ -956,7 +1150,143 @@ When creating external blocks for distribution:
 For questions or help with block development:
 1. **Examples**: Check existing blocks in `src/components/blocks/`
 2. **Types**: Refer to TypeScript interfaces in `src/types/bento.ts`
-3. **Icons**: Browse Lucide React documentation for available icons
+3. **Icons**: Browse React Icons Feather documentation for available icons
 4. **Testing**: Test blocks in both mobile and desktop views
 5. **Patterns**: Follow established conventions for consistency
 6. **Documentation**: Keep this guide updated with new features 
+
+## Error Handling & Debugging
+
+The block registry includes comprehensive error handling for both core and third-party blocks:
+
+### Error-Safe Methods
+
+Use these methods for production code - they include error recovery and validation:
+
+```typescript
+// ✅ Error-safe methods (recommended)
+const block = blockRegistry.getBlock(type);        // Returns null on error
+const blocks = blockRegistry.getAllBlocks();       // Returns [] on error
+const types = blockRegistry.getAvailableTypes();   // Returns [] on error
+const isHealthy = blockRegistry.hasBlock(type);    // Returns false on error
+
+// Health monitoring
+const health = blockRegistry.healthCheck();
+const status = blockRegistry.getStatus();
+```
+
+### Legacy Interface Methods
+
+These methods are kept for interface compatibility but don't include error handling:
+
+```typescript
+// ⚠️ Legacy methods (use with caution)
+const block = blockRegistry.get(type);             // Can return undefined
+const blocks = blockRegistry.getAll();             // Returns raw Map
+const configs = blockRegistry.getConfigs();        // Can throw errors
+```
+
+### Error Types & Recovery
+
+The system handles various error scenarios:
+
+1. **Module Loading Errors**: Failed imports are logged and skipped
+2. **Validation Errors**: Invalid block configurations are rejected
+3. **Runtime Errors**: Component errors are caught and logged
+4. **Third-party Block Errors**: External blocks are isolated from core blocks
+
+### Debugging Tools
+
+#### Console Logging
+
+The registry provides detailed console output with emojis for easy identification:
+
+```
+🚀 Initializing block registry...
+[core:PhotoBlock] ✅ Registered block: photo (Photo Block)
+[external:weather] ❌ Failed to load: Module not found
+🎉 Block registry initialized in 45ms:
+   ✅ 9 blocks loaded successfully
+   ❌ 1 blocks failed to load
+   📦 Total registered: 9 blocks
+```
+
+#### Health Check API
+
+```typescript
+const health = blockRegistry.healthCheck();
+console.log(health);
+// {
+//   healthy: false,
+//   issues: ["Block 'weather' failed validation"],
+//   blockCount: 9
+// }
+```
+
+#### Registry Status
+
+```typescript
+const status = blockRegistry.getStatus();
+console.log(status);
+// {
+//   initialized: true,
+//   totalBlocks: 9,
+//   healthyBlocks: 9,
+//   coreBlocks: 9,
+//   externalBlocks: 0
+// }
+```
+
+### Best Practices for Block Development
+
+1. **Always use error-safe methods** in components and production code
+2. **Test block validation** by checking health after registration
+3. **Handle missing blocks gracefully** - components should render fallbacks
+4. **Monitor console output** during development for early error detection
+5. **Use source tagging** when registering external blocks:
+
+```typescript
+blockRegistry.register(myBlockModule, 'plugin:my-weather-block');
+```
+
+### Third-Party Block Guidelines
+
+When developing external blocks:
+
+1. **Export validation**: Ensure your block exports `blockModule` correctly
+2. **Error boundaries**: Wrap your components in error boundaries
+3. **Graceful degradation**: Handle missing dependencies gracefully
+4. **Version compatibility**: Specify `minAppVersion` in your config
+5. **Testing**: Test your block in isolation and with the full system
+
+Example external block structure:
+```typescript
+// my-custom-block/index.ts
+export const blockModule: BlockModule = {
+  config: {
+    type: 'my-custom',
+    name: 'My Custom Block',
+    icon: 'FiStar',
+    description: 'A custom block',
+    defaultSize: 'medium',
+    minAppVersion: '1.0.0'
+  },
+  Component: MyCustomComponent,
+  configForm: {
+    fields: [/* ... */]
+  },
+  getDefaultContent: () => ({ message: 'Hello World' })
+};
+```
+
+### Error Recovery Strategies
+
+The system implements several recovery strategies:
+
+1. **Partial Loading**: Continue loading other blocks if one fails
+2. **Validation Skipping**: Skip invalid blocks but continue with valid ones  
+3. **Runtime Isolation**: Block errors don't crash the entire system
+4. **Fallback Rendering**: Missing blocks show error states instead of crashing
+5. **Retry Prevention**: Mark registry as initialized even on partial failure
+
+This ensures the application remains functional even when some blocks fail to load or encounter errors. 

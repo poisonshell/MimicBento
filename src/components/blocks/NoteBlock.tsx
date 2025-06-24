@@ -8,7 +8,11 @@ import {
 function NoteBlockComponent({ block }: BlockComponentProps) {
   const { content, title } = block;
 
-  if (!content?.text && !title) {
+  // Type-safe content access
+  const contentRecord = content as Record<string, unknown>;
+  const text = typeof contentRecord.text === 'string' ? contentRecord.text : '';
+
+  if (!text && !title) {
     return (
       <div className="flex items-center justify-center h-full p-4 text-gray-500">
         <span>Add your note text</span>
@@ -19,7 +23,7 @@ function NoteBlockComponent({ block }: BlockComponentProps) {
   return (
     <div className="flex flex-col justify-center h-full p-4 bg-white">
       <div className="text-gray-900 text-base whitespace-pre-wrap">
-        {content?.text || title}
+        {text || title}
       </div>
     </div>
   );
@@ -29,10 +33,10 @@ function NoteBlockComponent({ block }: BlockComponentProps) {
 const config: BlockConfig = {
   type: 'note',
   name: 'Note',
-  icon: 'FileText',
+  icon: 'FiFileText',
   description: 'Text note or memo',
   defaultSize: 'small',
-  supportedSizes: ['small', 'medium', 'large', 'wide'],
+  supportedSizes: ['small', 'medium', 'large', 'wide', 'tall'],
   category: 'content',
   version: '1.0.0',
   author: {
@@ -56,8 +60,9 @@ const configForm: BlockConfigForm = {
       },
     },
   ],
-  validate: data => {
-    if (!data.text || data.text.trim().length === 0) {
+  validate: (data: Record<string, unknown>) => {
+    const text = typeof data.text === 'string' ? data.text : '';
+    if (!text || text.trim().length === 0) {
       return 'Note text is required';
     }
     return null;
@@ -70,12 +75,19 @@ const getDefaultContent = () => ({
 });
 
 // Preview component for the add modal
-function NotePreviewComponent({ content }: { content: any }) {
+function NotePreviewComponent({
+  content,
+}: {
+  content: Record<string, unknown>;
+}) {
+  const contentRecord = content as Record<string, unknown>;
+  const text = typeof contentRecord.text === 'string' ? contentRecord.text : '';
+
   return (
     <div className="p-2 border rounded text-sm">
       <div className="font-medium">📝 Note</div>
       <div className="text-gray-500 text-xs mt-1 line-clamp-2">
-        {content.text || 'Your note text will appear here...'}
+        {text || 'Your note text will appear here...'}
       </div>
     </div>
   );

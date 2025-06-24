@@ -8,7 +8,15 @@ import {
 function MusicBlockComponent({ block }: BlockComponentProps) {
   const { content, title } = block;
 
-  if (!content?.title && !content?.artist && !title) {
+  // Type-safe content access
+  const contentRecord = content as Record<string, unknown>;
+  const songTitle =
+    typeof contentRecord.title === 'string' ? contentRecord.title : '';
+  const artist =
+    typeof contentRecord.artist === 'string' ? contentRecord.artist : '';
+  const url = typeof contentRecord.url === 'string' ? contentRecord.url : '';
+
+  if (!songTitle && !artist && !title) {
     return (
       <div className="flex items-center justify-center h-full text-gray-500">
         <span>Configure music details</span>
@@ -17,15 +25,15 @@ function MusicBlockComponent({ block }: BlockComponentProps) {
   }
 
   const handleClick = () => {
-    if (content?.url) {
-      window.open(content.url, '_blank', 'noopener noreferrer');
+    if (url) {
+      window.open(url, '_blank', 'noopener noreferrer');
     }
   };
 
   return (
     <div
       className={`flex flex-col items-center justify-center h-full text-center p-4 ${
-        content?.url ? 'cursor-pointer hover:bg-gray-50 transition-colors' : ''
+        url ? 'cursor-pointer hover:bg-gray-50 transition-colors' : ''
       }`}
       onClick={handleClick}
     >
@@ -46,14 +54,12 @@ function MusicBlockComponent({ block }: BlockComponentProps) {
       </div>
       <div className="space-y-1">
         <h3 className="font-medium text-gray-900 text-sm line-clamp-2">
-          {content?.title || title || 'Untitled'}
+          {songTitle || title || 'Untitled'}
         </h3>
-        {content?.artist && (
-          <p className="text-gray-500 text-xs line-clamp-1">{content.artist}</p>
+        {artist && (
+          <p className="text-gray-500 text-xs line-clamp-1">{artist}</p>
         )}
-        {content?.url && (
-          <p className="text-green-600 text-xs">Click to play</p>
-        )}
+        {url && <p className="text-green-600 text-xs">Click to play</p>}
       </div>
     </div>
   );
@@ -63,10 +69,10 @@ function MusicBlockComponent({ block }: BlockComponentProps) {
 const config: BlockConfig = {
   type: 'music',
   name: 'Music',
-  icon: 'Music',
-  description: 'Music track or player',
+  icon: 'FiMusic',
+  description: 'Music track or playlist',
   defaultSize: 'small',
-  supportedSizes: ['small', 'medium'],
+  supportedSizes: ['small', 'medium', 'large'],
   category: 'media',
   version: '1.0.0',
   author: {
@@ -113,8 +119,10 @@ const configForm: BlockConfigForm = {
       },
     },
   ],
-  validate: data => {
-    if (!data.title || !data.artist) {
+  validate: (data: Record<string, unknown>) => {
+    const title = typeof data.title === 'string' ? data.title : '';
+    const artist = typeof data.artist === 'string' ? data.artist : '';
+    if (!title || !artist) {
       return 'Song title and artist are required';
     }
     return null;
@@ -129,13 +137,21 @@ const getDefaultContent = () => ({
 });
 
 // Preview component for the add modal
-function MusicPreviewComponent({ content }: { content: any }) {
+function MusicPreviewComponent({
+  content,
+}: {
+  content: Record<string, unknown>;
+}) {
+  const contentRecord = content as Record<string, unknown>;
+  const title =
+    typeof contentRecord.title === 'string' ? contentRecord.title : '';
+  const artist =
+    typeof contentRecord.artist === 'string' ? contentRecord.artist : '';
+
   return (
     <div className="p-2 border rounded text-sm">
-      <div className="font-medium">🎵 {content.title || 'Music Track'}</div>
-      <div className="text-gray-500 text-xs">
-        by {content.artist || 'Artist'}
-      </div>
+      <div className="font-medium">🎵 {title || 'Music Track'}</div>
+      <div className="text-gray-500 text-xs">by {artist || 'Artist'}</div>
     </div>
   );
 }

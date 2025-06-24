@@ -2,26 +2,32 @@
 
 import { createPortal } from 'react-dom';
 import { useState, useRef, useEffect } from 'react';
-import { BentoBlockType, BentoBlock, BlockConfig } from '@/types/bento';
+import {
+  BentoBlockType,
+  BentoBlock,
+  BlockConfig,
+  SocialBlockContent,
+  BlockFormField,
+} from '@/types/bento';
 import blockRegistry from '@/services/blockRegistry';
 import { FormField, FormTextarea, FormSelect } from '@/utils';
 import {
-  X,
-  ArrowLeft,
-  Plus,
-  Link,
-  Type,
-  Image,
-  Video,
-  Music,
-  Clock,
-  Map,
-  Users,
-  FileText,
-  Layout,
-  Upload,
-  Loader2,
-} from 'lucide-react';
+  FiX as X,
+  FiArrowLeft as ArrowLeft,
+  FiPlus as Plus,
+  FiLink as Link,
+  FiType as Type,
+  FiImage as Image,
+  FiVideo as Video,
+  FiMusic as Music,
+  FiClock as Clock,
+  FiMap as Map,
+  FiUsers as Users,
+  FiFileText as FileText,
+  FiLayout as Layout,
+  FiUpload as Upload,
+  FiLoader as Loader2,
+} from 'react-icons/fi';
 
 // Icon mapping for block types
 const getBlockIcon = (
@@ -33,6 +39,17 @@ const getBlockIcon = (
   }
 
   const iconMap = {
+    // React Icons Feather names (new)
+    FiLink: Link,
+    FiFileText: FileText,
+    FiImage: Image,
+    FiVideo: Video,
+    FiMusic: Music,
+    FiClock: Clock,
+    FiMap: Map,
+    FiUsers: Users,
+    FiLayout: Layout,
+    // Legacy Lucide names (for backward compatibility)
     Link: Link,
     FileText: FileText,
     Image: Image,
@@ -102,15 +119,39 @@ export default function AddBlockModal({
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    // Initialize block registry and get available blocks
-    blockRegistry
-      .initialize()
-      .then(() => {
-        const configs = blockRegistry.getConfigs();
+    // Initialize block registry and get available blocks with error handling
+    const initializeRegistry = async () => {
+      try {
+        await blockRegistry.initialize();
+
+        // Get all blocks with error recovery
+        const allBlockModules = blockRegistry.getAllBlocks();
+        const configs = allBlockModules.map(module => module.config);
+
         setAvailableBlocks(configs);
         setIsRegistryReady(true);
-      })
-      .catch(console.error);
+
+        // Run health check and log results
+        const health = blockRegistry.healthCheck();
+        if (!health.healthy) {
+          console.warn(
+            '⚠️  Block registry health issues detected:',
+            health.issues
+          );
+        }
+
+        // Log registry status
+        const status = blockRegistry.getStatus();
+        console.log('📊 Block Registry Status:', status);
+      } catch (error) {
+        console.error('💥 Failed to initialize block registry:', error);
+        // Still set as ready with empty blocks to prevent infinite loading
+        setAvailableBlocks([]);
+        setIsRegistryReady(true);
+      }
+    };
+
+    initializeRegistry();
   }, []);
 
   if (!isOpen) return null;
@@ -126,9 +167,14 @@ export default function AddBlockModal({
 
     // Get default content from block module or fallback
     let defaultContent = {};
-    const blockModule = blockRegistry.get(type);
+    const blockModule = blockRegistry.getBlock(type);
     if (blockModule?.getDefaultContent) {
-      defaultContent = blockModule.getDefaultContent();
+      try {
+        defaultContent = blockModule.getDefaultContent();
+      } catch (error) {
+        console.error(`💥 Error getting default content for ${type}:`, error);
+        defaultContent = getDefaultContent(type);
+      }
     } else {
       defaultContent = getDefaultContent(type);
     }
@@ -146,7 +192,7 @@ export default function AddBlockModal({
 
     // Auto-populate title for social blocks based on default platform
     let initialTitle = type === 'section-header' ? '' : 'New Block';
-    if (type === 'social' && (defaultContent as any).platform) {
+    if (type === 'social' && 'platform' in defaultContent) {
       const platformLabels: { [key: string]: string } = {
         x: 'X',
         instagram: 'Instagram',
@@ -160,10 +206,13 @@ export default function AddBlockModal({
         twitch: 'Twitch',
       };
 
-      const platform = (defaultContent as any).platform;
-      initialTitle =
-        platformLabels[platform] ||
-        platform.charAt(0).toUpperCase() + platform.slice(1);
+      const socialContent = defaultContent as SocialBlockContent;
+      const platform = socialContent.platform;
+      if (typeof platform === 'string') {
+        initialTitle =
+          platformLabels[platform] ||
+          platform.charAt(0).toUpperCase() + platform.slice(1);
+      }
     }
 
     // Initialize block data with defaults
@@ -242,7 +291,7 @@ export default function AddBlockModal({
     }
   };
 
-  const updateContent = (field: string, value: any) => {
+  const updateContent = (field: string, value: unknown) => {
     setBlockData(prev => {
       const newBlockData = {
         ...prev,
@@ -253,13 +302,25 @@ export default function AddBlockModal({
       };
 
       // Auto-populate title for social blocks when platform is selected
-      if (prev.type === 'social' && field === 'platform' && value) {
+      if (
+        prev.type === 'social' &&
+        field === 'platform' &&
+        typeof value === 'string'
+      ) {
         // Check for duplicate platform
         const existingSocialBlocks = allBlocks.filter(
           block => block.type === 'social' && block.id !== prev.id
         );
         const existingPlatforms = existingSocialBlocks
-          .map(block => block.content?.platform)
+          .map(block => {
+            if (
+              'platform' in block.content &&
+              typeof block.content.platform === 'string'
+            ) {
+              return block.content.platform;
+            }
+            return null;
+          })
           .filter(Boolean);
 
         if (existingPlatforms.includes(value)) {
@@ -335,7 +396,7 @@ export default function AddBlockModal({
     if (!selectedType) return null;
 
     // Check if block is registered in the registry
-    const blockModule = blockRegistry.get(selectedType);
+    const blockModule = blockRegistry.getBlock(selectedType);
     if (blockModule?.configForm) {
       return renderDynamicForm(blockModule.configForm.fields);
     }
@@ -357,17 +418,23 @@ export default function AddBlockModal({
     );
   };
 
-  const renderDynamicForm = (fields: any[]) => {
+  const renderDynamicForm = (fields: BlockFormField[]) => {
     return (
       <div className="space-y-6">
         {fields.map(field => {
-          const currentValue =
-            blockData.content?.[field.key] || field.defaultValue || '';
+          const content = blockData.content as Record<string, unknown>;
+          const rawValue = content?.[field.key] ?? field.defaultValue ?? '';
+
+          // Safe type conversion based on field type
+          const stringValue =
+            typeof rawValue === 'string' ? rawValue : String(rawValue || '');
+          const numberValue = typeof rawValue === 'number' ? rawValue : 0;
+          const booleanValue = typeof rawValue === 'boolean' ? rawValue : false;
 
           // Check field dependencies
           if (field.dependencies) {
-            const shouldShow = field.dependencies.every((dep: any) => {
-              const depValue = blockData.content?.[dep.field];
+            const shouldShow = field.dependencies.every(dep => {
+              const depValue = content?.[dep.field];
               const condition = dep.condition || 'equals';
 
               switch (condition) {
@@ -376,7 +443,7 @@ export default function AddBlockModal({
                 case 'not-equals':
                   return depValue !== dep.value;
                 case 'contains':
-                  return String(depValue).includes(dep.value);
+                  return String(depValue).includes(String(dep.value));
                 case 'greater-than':
                   return Number(depValue) > Number(dep.value);
                 case 'less-than':
@@ -398,10 +465,10 @@ export default function AddBlockModal({
                 <FormField
                   key={field.key}
                   label={field.label}
-                  value={currentValue}
+                  value={stringValue}
                   onChange={value => updateContent(field.key, value)}
                   placeholder={field.placeholder}
-                  type={field.type}
+                  type={field.type === 'password' ? 'text' : field.type}
                   required={field.required}
                   helpText={field.help}
                 />
@@ -418,7 +485,7 @@ export default function AddBlockModal({
                   </label>
                   <input
                     type={field.type}
-                    value={currentValue}
+                    value={field.type === 'number' ? numberValue : stringValue}
                     onChange={e =>
                       updateContent(
                         field.key,
@@ -451,7 +518,7 @@ export default function AddBlockModal({
                   </label>
                   <input
                     type={field.type}
-                    value={currentValue}
+                    value={stringValue}
                     onChange={e => updateContent(field.key, e.target.value)}
                     required={field.required}
                     className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-black focus:border-black"
@@ -473,13 +540,13 @@ export default function AddBlockModal({
                   <div className="flex items-center space-x-2">
                     <input
                       type="color"
-                      value={currentValue || '#000000'}
+                      value={stringValue || '#000000'}
                       onChange={e => updateContent(field.key, e.target.value)}
                       className="h-10 w-16 border border-gray-300 rounded cursor-pointer"
                     />
                     <input
                       type="text"
-                      value={currentValue}
+                      value={stringValue}
                       onChange={e => updateContent(field.key, e.target.value)}
                       placeholder="#000000"
                       className="flex-1 border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-black focus:border-black"
@@ -495,7 +562,7 @@ export default function AddBlockModal({
                 <FormTextarea
                   key={field.key}
                   label={field.label}
-                  value={currentValue}
+                  value={stringValue}
                   onChange={value => updateContent(field.key, value)}
                   placeholder={field.placeholder}
                   required={field.required}
@@ -508,7 +575,7 @@ export default function AddBlockModal({
                 <FormSelect
                   key={field.key}
                   label={field.label}
-                  value={currentValue}
+                  value={stringValue}
                   onChange={value => updateContent(field.key, value)}
                   options={field.options || []}
                   required={field.required}
@@ -525,28 +592,34 @@ export default function AddBlockModal({
                     )}
                   </label>
                   <div className="space-y-3">
-                    {(field.options || []).map((option: any) => (
-                      <div key={option.value} className="flex items-center">
-                        <input
-                          type="radio"
-                          id={`${field.key}-${option.value}`}
-                          name={field.key}
-                          value={option.value}
-                          checked={currentValue === option.value}
-                          onChange={e =>
-                            updateContent(field.key, e.target.value)
-                          }
-                          disabled={option.disabled}
-                          className="h-4 w-4 text-black border-gray-300 focus:ring-black"
-                        />
-                        <label
-                          htmlFor={`${field.key}-${option.value}`}
-                          className="ml-3 text-sm font-medium text-gray-700"
-                        >
-                          {option.label}
-                        </label>
-                      </div>
-                    ))}
+                    {(field.options || []).map(
+                      (option: {
+                        value: string;
+                        label: string;
+                        disabled?: boolean;
+                      }) => (
+                        <div key={option.value} className="flex items-center">
+                          <input
+                            type="radio"
+                            id={`${field.key}-${option.value}`}
+                            name={field.key}
+                            value={option.value}
+                            checked={stringValue === option.value}
+                            onChange={e =>
+                              updateContent(field.key, e.target.value)
+                            }
+                            disabled={option.disabled}
+                            className="h-4 w-4 text-black border-gray-300 focus:ring-black"
+                          />
+                          <label
+                            htmlFor={`${field.key}-${option.value}`}
+                            className="ml-3 text-sm font-medium text-gray-700"
+                          >
+                            {option.label}
+                          </label>
+                        </div>
+                      )
+                    )}
                   </div>
                   {field.help && (
                     <p className="text-xs text-gray-500 mt-2">{field.help}</p>
@@ -559,7 +632,7 @@ export default function AddBlockModal({
                   <input
                     type="checkbox"
                     id={field.key}
-                    checked={currentValue}
+                    checked={booleanValue}
                     onChange={e => updateContent(field.key, e.target.checked)}
                     className="h-4 w-4 text-black border-gray-300 rounded focus:ring-black mt-1"
                   />
@@ -587,14 +660,17 @@ export default function AddBlockModal({
                   </label>
 
                   {/* Current image preview */}
-                  {currentValue && field.accept?.includes('image') && (
+
+                  {/* Current image preview */}
+                  {stringValue && (
                     <div className="relative">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
-                        src={currentValue}
+                        src={stringValue}
                         alt="Preview"
-                        className="w-full h-32 object-cover rounded-xl border border-gray-200 shadow-sm"
+                        className="w-full h-50 object-cover rounded-xl border border-gray-200 shadow-sm"
                       />
-                      <div className="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-10 transition-opacity rounded-xl" />
+                      <div className="absolute inset-0 bg-opacity-0 hover:bg-opacity-10 transition-opacity rounded-xl" />
                     </div>
                   )}
 
@@ -629,7 +705,7 @@ export default function AddBlockModal({
                   {/* Manual URL input */}
                   <FormField
                     label=""
-                    value={currentValue}
+                    value={stringValue}
                     onChange={value => updateContent(field.key, value)}
                     placeholder="https://example.com/image.jpg"
                     type="url"
@@ -653,8 +729,10 @@ export default function AddBlockModal({
                 return (
                   <div key={field.key}>
                     <field.CustomComponent
-                      value={currentValue}
-                      onChange={(value: any) => updateContent(field.key, value)}
+                      value={stringValue}
+                      onChange={(value: unknown) =>
+                        updateContent(field.key, value)
+                      }
                       field={field}
                     />
                     {field.help && (

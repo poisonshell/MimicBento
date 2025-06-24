@@ -2,7 +2,7 @@
   "profile": {
     "name": "John DOO",
     "bio": "hello world ",
-    "avatar": "/uploads/1750705129199-51fcef2251c0fcd1576e6f8d5a8fc102.jpg"
+    "avatar": "/uploads/1750747156838-527cf09c8f84dd41015bfc42a9386436.jpg"
   },
   "blocks": [
     {
@@ -179,7 +179,7 @@
       },
       "size": "wide",
       "position": {
-        "x": 0,
+        "x": 1,
         "y": 2
       }
     },
@@ -212,8 +212,8 @@
       },
       "size": "small",
       "position": {
-        "x": 3,
-        "y": 2
+        "x": 0,
+        "y": 0
       }
     },
     {
@@ -229,8 +229,8 @@
       },
       "size": "small",
       "position": {
-        "x": 1,
-        "y": 0
+        "x": 0,
+        "y": 2
       }
     },
     {
@@ -279,7 +279,7 @@
       },
       "size": "small",
       "position": {
-        "x": 0,
+        "x": 1,
         "y": 0
       }
     }

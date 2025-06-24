@@ -47,8 +47,9 @@ export default function BentoGrid({
     x: number;
     y: number;
   } | null>(null);
-  const [resizingBlock, setResizingBlock] = useState<string | null>(null);
-  const [resizeDirection, setResizeDirection] = useState<string | null>(null);
+  // Note: These resize states are currently unused but kept for future resize functionality
+  // const [resizingBlock, setResizingBlock] = useState<string | null>(null);
+  // const [resizeDirection, setResizeDirection] = useState<string | null>(null);
 
   if (isMobile) {
     // Mobile layout: Simple 2-column grid with equal-sized blocks

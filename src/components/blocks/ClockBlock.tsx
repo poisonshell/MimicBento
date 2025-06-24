@@ -1,14 +1,9 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import {
-  BlockModule,
-  BlockComponentProps,
-  BlockConfig,
-  BlockConfigForm,
-} from '@/types/bento';
+import { BlockModule, BlockConfig, BlockConfigForm } from '@/types/bento';
 
-function ClockBlockComponent({ block }: BlockComponentProps) {
+function ClockBlockComponent() {
   const [time, setTime] = useState<Date | null>(null);
   const [timeZone, setTimeZone] = useState('');
 
@@ -52,7 +47,7 @@ function ClockBlockComponent({ block }: BlockComponentProps) {
 const config: BlockConfig = {
   type: 'clock',
   name: 'Clock',
-  icon: 'Clock',
+  icon: 'FiClock',
   description: 'Live clock showing current time',
   defaultSize: 'small',
   supportedSizes: ['small', 'medium'],

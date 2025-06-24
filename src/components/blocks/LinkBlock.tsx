@@ -8,7 +8,13 @@ import {
 function LinkBlockComponent({ block }: BlockComponentProps) {
   const { content } = block;
 
-  if (!content?.url) {
+  // Safe type conversion
+  const url = typeof content?.url === 'string' ? content.url : '';
+  const title = typeof content?.title === 'string' ? content.title : '';
+  const description =
+    typeof content?.description === 'string' ? content.description : '';
+
+  if (!url) {
     return (
       <div className="flex items-center justify-center h-full p-4 text-gray-500">
         <span>Configure link URL</span>
@@ -21,23 +27,23 @@ function LinkBlockComponent({ block }: BlockComponentProps) {
       {/* Main content */}
       <div className="flex flex-col space-y-1">
         <div className="font-medium text-gray-900 text-base">
-          {content.title || 'Link'}
+          {title || 'Link'}
         </div>
-        {content.description && (
-          <div className="text-gray-500 text-sm">{content.description}</div>
+        {description && (
+          <div className="text-gray-500 text-sm">{description}</div>
         )}
       </div>
 
       {/* URL indicator */}
-      <div className="text-xs text-gray-400 truncate mt-2">{content.url}</div>
+      <div className="text-xs text-gray-400 truncate mt-2">{url}</div>
 
       {/* Link at bottom - invisible but clickable */}
       <a
-        href={content.url}
+        href={url}
         target="_blank"
         rel="noopener noreferrer"
         className="absolute inset-0"
-        aria-label={`Visit ${content.title || 'link'}`}
+        aria-label={`Visit ${title || 'link'}`}
       />
     </div>
   );
@@ -47,7 +53,7 @@ function LinkBlockComponent({ block }: BlockComponentProps) {
 const config: BlockConfig = {
   type: 'link',
   name: 'Link',
-  icon: 'Link',
+  icon: 'FiLink',
   description: 'External link with title and description',
   defaultSize: 'small',
   supportedSizes: ['small', 'medium', 'wide'],
@@ -113,15 +119,24 @@ const getDefaultContent = () => ({
 });
 
 // Preview component for the add modal
-function LinkPreviewComponent({ content }: { content: any }) {
+function LinkPreviewComponent({
+  content,
+}: {
+  content: Record<string, unknown>;
+}) {
+  const title = typeof content.title === 'string' ? content.title : '';
+  const description =
+    typeof content.description === 'string' ? content.description : '';
+  const url = typeof content.url === 'string' ? content.url : '';
+
   return (
     <div className="p-2 border rounded text-sm">
-      <div className="font-medium">{content.title || 'Link Title'}</div>
-      {content.description && (
-        <div className="text-gray-500 text-xs mt-1">{content.description}</div>
+      <div className="font-medium">{title || 'Link Title'}</div>
+      {description && (
+        <div className="text-gray-500 text-xs mt-1">{description}</div>
       )}
       <div className="text-blue-500 text-xs mt-1 truncate">
-        {content.url || 'https://example.com'}
+        {url || 'https://example.com'}
       </div>
     </div>
   );

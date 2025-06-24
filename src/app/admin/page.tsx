@@ -7,13 +7,14 @@ import BlockEditModal from '@/components/BlockEditModal';
 import AddBlockModal from '@/components/AddBlockModal';
 import { getPortfolioData, savePortfolioData } from '@/services/portfolio';
 import { useState, useEffect } from 'react';
-import { BentoData, BentoBlock } from '@/types/bento';
+import { BentoBlock, BentoData } from '@/types/bento';
 import { notFound } from 'next/navigation';
 import blockRegistry from '@/services/blockRegistry';
 import { AdminPageSkeleton } from '@/components/BlockSkeleton';
+import Link from 'next/link';
 
 export default function AdminPage() {
-  const [portfolioData, setPortfolioData] = useState<any>(null);
+  const [portfolioData, setPortfolioData] = useState<BentoData | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
@@ -64,16 +65,33 @@ export default function AdminPage() {
 
     const initializeApp = async () => {
       try {
-        // Initialize block registry first
+        // Initialize block registry first with comprehensive error handling
         await blockRegistry.initialize();
+
+        // Check registry health after initialization
+        const health = blockRegistry.healthCheck();
+        if (!health.healthy) {
+          console.warn('⚠️  Block registry health issues:', health.issues);
+          showToast(
+            `Block system partially loaded (${health.blockCount} blocks)`,
+            'error'
+          );
+        }
+
+        // Log registry status for debugging
+        const status = blockRegistry.getStatus();
+        console.log('📊 Admin Page Registry Status:', status);
+
         setIsRegistryReady(true);
 
         // Then load portfolio data
         const data = await getPortfolioData();
         setPortfolioData(data);
       } catch (error) {
-        console.error('Failed to initialize admin page:', error);
+        console.error('💥 Failed to initialize admin page:', error);
         showToast('Failed to initialize application', 'error');
+        // Still mark as ready to prevent infinite loading
+        setIsRegistryReady(true);
       } finally {
         setLoading(false);
       }
@@ -92,14 +110,17 @@ export default function AdminPage() {
   }, []);
 
   const handleNameChange = async (name: string) => {
-    const updatedData = {
+    if (!portfolioData) return;
+
+    const updatedData: BentoData = {
       ...portfolioData,
       profile: {
-        ...portfolioData?.profile,
+        ...portfolioData.profile,
         name,
-        bio: portfolioData?.profile?.bio || '',
-        avatar: portfolioData?.profile?.avatar,
+        bio: portfolioData.profile.bio || '',
+        avatar: portfolioData.profile.avatar,
       },
+      blocks: portfolioData.blocks,
     };
 
     setPortfolioData(updatedData);
@@ -115,14 +136,17 @@ export default function AdminPage() {
   };
 
   const handleBioChange = async (bio: string) => {
-    const updatedData = {
+    if (!portfolioData) return;
+
+    const updatedData: BentoData = {
       ...portfolioData,
       profile: {
-        ...portfolioData?.profile,
+        ...portfolioData.profile,
         bio,
-        name: portfolioData?.profile?.name || 'Portfolio',
-        avatar: portfolioData?.profile?.avatar,
+        name: portfolioData.profile.name || 'Portfolio',
+        avatar: portfolioData.profile.avatar,
       },
+      blocks: portfolioData.blocks,
     };
 
     setPortfolioData(updatedData);
@@ -138,14 +162,17 @@ export default function AdminPage() {
   };
 
   const handleAvatarChange = async (avatar: string) => {
-    const updatedData = {
+    if (!portfolioData) return;
+
+    const updatedData: BentoData = {
       ...portfolioData,
       profile: {
-        ...portfolioData?.profile,
+        ...portfolioData.profile,
         avatar,
-        name: portfolioData?.profile?.name || 'Portfolio',
-        bio: portfolioData?.profile?.bio || '',
+        name: portfolioData.profile.name || 'Portfolio',
+        bio: portfolioData.profile.bio || '',
       },
+      blocks: portfolioData.blocks,
     };
 
     setPortfolioData(updatedData);
@@ -164,21 +191,29 @@ export default function AdminPage() {
     blockId: string,
     newPosition: { x: number; y: number }
   ) => {
-    setPortfolioData((prev: any) => ({
-      ...prev,
-      blocks: prev.blocks.map((block: any) =>
-        block.id === blockId ? { ...block, position: newPosition } : block
-      ),
-    }));
+    setPortfolioData((prev: BentoData | null) => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        blocks: prev.blocks.map((block: BentoBlock) =>
+          block.id === blockId ? { ...block, position: newPosition } : block
+        ),
+      };
+    });
   };
 
   const handleBlockSizeChange = (blockId: string, newSize: string) => {
-    setPortfolioData((prev: any) => ({
-      ...prev,
-      blocks: prev.blocks.map((block: any) =>
-        block.id === blockId ? { ...block, size: newSize } : block
-      ),
-    }));
+    setPortfolioData((prev: BentoData | null) => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        blocks: prev.blocks.map((block: BentoBlock) =>
+          block.id === blockId
+            ? { ...block, size: newSize as BentoBlock['size'] }
+            : block
+        ),
+      };
+    });
   };
 
   const handleBlockEdit = (block: BentoBlock) => {
@@ -190,9 +225,9 @@ export default function AdminPage() {
     const updatedData = {
       ...portfolioData,
       blocks: (portfolioData?.blocks || []).filter(
-        (block: any) => block.id !== blockId
+        (block: BentoBlock) => block.id !== blockId
       ),
-    };
+    } as BentoData;
 
     setPortfolioData(updatedData);
 
@@ -209,10 +244,10 @@ export default function AdminPage() {
   const handleBlockSave = async (updatedBlock: BentoBlock) => {
     const updatedData = {
       ...portfolioData,
-      blocks: (portfolioData?.blocks || []).map((block: any) =>
+      blocks: (portfolioData?.blocks || []).map((block: BentoBlock) =>
         block.id === updatedBlock.id ? updatedBlock : block
       ),
-    };
+    } as BentoData;
 
     setPortfolioData(updatedData);
 
@@ -240,9 +275,12 @@ export default function AdminPage() {
   };
 
   const handleAddBlockComplete = async (newBlock: BentoBlock) => {
-    const updatedData = {
+    if (!portfolioData) return;
+
+    const updatedData: BentoData = {
       ...portfolioData,
-      blocks: [...(portfolioData?.blocks || []), newBlock],
+      profile: portfolioData.profile,
+      blocks: [...portfolioData.blocks, newBlock],
     };
 
     setPortfolioData(updatedData);
@@ -266,6 +304,8 @@ export default function AdminPage() {
   };
 
   const handleSave = async () => {
+    if (!portfolioData) return;
+
     setSaving(true);
     try {
       const result = await savePortfolioData(portfolioData);
@@ -386,11 +426,13 @@ export default function AdminPage() {
         {/* Bottom Toolbar */}
         <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50">
           <div className="bg-white rounded-xl shadow-2xl border border-gray-200 px-3 py-2 flex items-center space-x-2">
+            <label className="text-sm font-medium">Admin Mode</label>
+
             {/* Save button */}
             <button
               onClick={handleSave}
               disabled={saving}
-              className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${
+              className={`cursor-pointer px-3 py-1 rounded-md text-xs font-medium transition-colors ${
                 saving
                   ? 'bg-gray-400 text-white cursor-not-allowed'
                   : 'bg-black hover:bg-gray-800 text-white'
@@ -399,6 +441,12 @@ export default function AdminPage() {
               {saving ? 'Saving...' : 'Save'}
             </button>
 
+            {/* Back button */}
+            <Link href="/">
+              <button className="cursor-pointer px-3 py-1 rounded-md text-xs font-medium transition-colors bg-black hover:bg-gray-800 text-white">
+                Home
+              </button>
+            </Link>
             {/* Mobile/Desktop toggle */}
             <div className="bg-black rounded-md p-0.5 flex items-center">
               <button
@@ -453,7 +501,7 @@ export default function AdminPage() {
           isOpen={isBlockModalOpen}
           onClose={handleBlockModalClose}
           onSave={handleBlockSave}
-          allBlocks={portfolioData.blocks}
+          allBlocks={portfolioData?.blocks || []}
         />
       )}
 
@@ -464,7 +512,7 @@ export default function AdminPage() {
           position={addPosition}
           onClose={handleAddModalClose}
           onAddBlock={handleAddBlockComplete}
-          allBlocks={portfolioData.blocks}
+          allBlocks={portfolioData?.blocks || []}
         />
       )}
     </>

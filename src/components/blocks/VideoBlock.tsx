@@ -8,7 +8,19 @@ import {
 function VideoBlockComponent({ block }: BlockComponentProps) {
   const { content, title } = block;
 
-  if (!content?.url && !content?.title && !title) {
+  // Type-safe content access
+  const contentRecord = content as Record<string, unknown>;
+  const videoTitle =
+    typeof contentRecord.title === 'string' ? contentRecord.title : '';
+  const description =
+    typeof contentRecord.description === 'string'
+      ? contentRecord.description
+      : '';
+  const url = typeof contentRecord.url === 'string' ? contentRecord.url : '';
+  const platform =
+    typeof contentRecord.platform === 'string' ? contentRecord.platform : '';
+
+  if (!url && !videoTitle && !title) {
     return (
       <div className="flex items-center justify-center h-full text-gray-500">
         <span>Configure video details</span>
@@ -17,38 +29,36 @@ function VideoBlockComponent({ block }: BlockComponentProps) {
   }
 
   const handleClick = () => {
-    if (content?.url) {
-      window.open(content.url, '_blank', 'noopener noreferrer');
+    if (url) {
+      window.open(url, '_blank', 'noopener noreferrer');
     }
   };
 
   return (
     <div
       className={`flex flex-col justify-between h-full p-4 ${
-        content?.url ? 'cursor-pointer hover:bg-gray-50 transition-colors' : ''
+        url ? 'cursor-pointer hover:bg-gray-50 transition-colors' : ''
       }`}
       onClick={handleClick}
     >
       {/* Main content */}
       <div className="flex flex-col space-y-1">
         <div className="font-medium text-gray-900 text-base line-clamp-2">
-          {content?.title || title || 'Video Title'}
+          {videoTitle || title || 'Video Title'}
         </div>
-        {content?.description && (
+        {description && (
           <div className="text-gray-500 text-sm line-clamp-2">
-            {content.description}
+            {description}
           </div>
         )}
-        {content?.platform && (
-          <div className="text-gray-400 text-xs capitalize">
-            {content.platform}
-          </div>
+        {platform && (
+          <div className="text-gray-400 text-xs capitalize">{platform}</div>
         )}
       </div>
 
       {/* Action text at bottom */}
       <div className="mt-auto pt-2">
-        {content?.url && (
+        {url && (
           <div className="text-sm text-blue-600 hover:text-blue-700 transition-colors">
             Watch video →
           </div>
@@ -62,7 +72,7 @@ function VideoBlockComponent({ block }: BlockComponentProps) {
 const config: BlockConfig = {
   type: 'video',
   name: 'Video',
-  icon: 'Video',
+  icon: 'FiVideo',
   description: 'Video content or link',
   defaultSize: 'medium',
   supportedSizes: ['small', 'medium', 'large', 'wide'],
@@ -126,8 +136,10 @@ const configForm: BlockConfigForm = {
       help: 'The video platform',
     },
   ],
-  validate: data => {
-    if (!data.title || !data.url) {
+  validate: (data: Record<string, unknown>) => {
+    const title = typeof data.title === 'string' ? data.title : '';
+    const url = typeof data.url === 'string' ? data.url : '';
+    if (!title || !url) {
       return 'Video title and URL are required';
     }
     return null;
@@ -143,12 +155,22 @@ const getDefaultContent = () => ({
 });
 
 // Preview component for the add modal
-function VideoPreviewComponent({ content }: { content: any }) {
+function VideoPreviewComponent({
+  content,
+}: {
+  content: Record<string, unknown>;
+}) {
+  const contentRecord = content as Record<string, unknown>;
+  const title =
+    typeof contentRecord.title === 'string' ? contentRecord.title : '';
+  const platform =
+    typeof contentRecord.platform === 'string' ? contentRecord.platform : '';
+
   return (
     <div className="p-2 border rounded text-sm">
-      <div className="font-medium">🎥 {content.title || 'Video'}</div>
+      <div className="font-medium">🎥 {title || 'Video'}</div>
       <div className="text-gray-500 text-xs">
-        {content.platform ? `${content.platform} video` : 'Video content'}
+        {platform ? `${platform} video` : 'Video content'}
       </div>
     </div>
   );

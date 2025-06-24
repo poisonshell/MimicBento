@@ -217,7 +217,6 @@ export const AvatarEditModal: React.FC<AvatarEditModalProps> = ({
   return createPortal(
     <div className="fixed inset-0  bg-opacity-50 backdrop-blur-sm flex items-center justify-center p-4 z-[9999]">
       <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full mx-4 overflow-hidden border border-gray-200">
-        =
         <div className="bg-black p-4 text-white relative">
           <div className="flex items-center justify-between">
             <h3 className="text-xl font-bold">Edit Profile Picture</h3>
@@ -230,7 +229,7 @@ export const AvatarEditModal: React.FC<AvatarEditModalProps> = ({
             </button>
           </div>
         </div>
-        =
+
         <div className="p-6 space-y-6">
           <div className="flex justify-center">
             <div className="relative">

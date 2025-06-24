@@ -126,7 +126,23 @@ function SocialBlockComponent({
 }: BlockComponentProps) {
   const { content, title } = block;
 
-  if (!content?.platform || !content?.url) {
+  // Type-safe content access
+  const contentRecord = content as Record<string, unknown>;
+  const platform =
+    typeof contentRecord.platform === 'string' ? contentRecord.platform : '';
+  const url = typeof contentRecord.url === 'string' ? contentRecord.url : '';
+  const displayName =
+    typeof contentRecord.displayName === 'string'
+      ? contentRecord.displayName
+      : '';
+  const username =
+    typeof contentRecord.username === 'string' ? contentRecord.username : '';
+  const description =
+    typeof contentRecord.description === 'string'
+      ? contentRecord.description
+      : '';
+
+  if (!platform || !url) {
     return (
       <div className="flex items-center justify-center h-full bg-gray-100 text-gray-500">
         <div className="text-center">
@@ -139,11 +155,11 @@ function SocialBlockComponent({
 
   const platformName =
     title ||
-    content.displayName ||
-    content.platform.charAt(0).toUpperCase() + content.platform.slice(1);
+    displayName ||
+    platform.charAt(0).toUpperCase() + platform.slice(1);
 
-  const description = content.username || content.description;
-  const colors = platformColors[content.platform] || platformColors.default;
+  const descriptionText = username || description;
+  const colors = platformColors[platform] || platformColors.default;
 
   // Use smaller text sizes for admin mobile view
   const titleTextSize = isAdmin && isMobile ? 'text-xs' : 'text-sm';
@@ -154,34 +170,27 @@ function SocialBlockComponent({
 
   return (
     <a
-      href={content.url}
+      href={url}
       target="_blank"
       rel="noopener noreferrer me"
       className={`${containerPadding} h-full w-full flex flex-col justify-between transition-all duration-300 ease-in-out hover:-translate-y-1 relative ${sectionSpacing} rounded-xl overflow-hidden`}
       style={{ backgroundColor: colors.bg, color: colors.text }}
     >
       <div className="relative w-10 h-10">
-        <SocialIcon
-          platform={content.platform}
-          isAdmin={isAdmin}
-          isMobile={isMobile}
-        />
+        <SocialIcon platform={platform} isAdmin={isAdmin} isMobile={isMobile} />
       </div>
 
       <div>
         <div className={titleTextSize}>{platformName}</div>
-        {description && (
+        {descriptionText && (
           <div className={`${descriptionTextSize} text-gray-500 mt-0.5`}>
-            {description}
+            {descriptionText}
           </div>
         )}
       </div>
 
       <div className="left-4">
-        <FollowButton
-          platform={content.platform}
-          isSmall={isAdmin && isMobile}
-        />
+        <FollowButton platform={platform} isSmall={isAdmin && isMobile} />
       </div>
     </a>
   );
@@ -191,8 +200,8 @@ function SocialBlockComponent({
 const config: BlockConfig = {
   type: 'social',
   name: 'Social',
-  icon: 'Users',
-  description: 'Social media link',
+  icon: 'FiUsers',
+  description: 'Social media profile or link',
   defaultSize: 'small',
   supportedSizes: ['small', 'medium'],
   category: 'social',
@@ -270,8 +279,11 @@ const configForm: BlockConfigForm = {
       },
     },
   ],
-  validate: data => {
-    if (!data.platform || !data.url) {
+  validate: (data: Record<string, unknown>) => {
+    const platform = typeof data.platform === 'string' ? data.platform : '';
+    const url = typeof data.url === 'string' ? data.url : '';
+
+    if (!platform || !url) {
       return 'Platform and URL are required';
     }
 
@@ -289,9 +301,9 @@ const configForm: BlockConfigForm = {
       twitch: ['twitch.tv'],
     };
 
-    const domains = platformDomains[data.platform];
-    if (domains && !domains.some(domain => data.url.includes(domain))) {
-      return `URL should be from ${domains.join(' or ')} for ${data.platform}`;
+    const domains = platformDomains[platform];
+    if (domains && !domains.some((domain: string) => url.includes(domain))) {
+      return `URL should be from ${domains.join(' or ')} for ${platform}`;
     }
 
     return null;
@@ -308,18 +320,32 @@ const getDefaultContent = () => ({
 });
 
 // Preview component for the add modal
-function SocialPreviewComponent({ content }: { content: any }) {
+function SocialPreviewComponent({
+  content,
+}: {
+  content: Record<string, unknown>;
+}) {
+  const contentRecord = content as Record<string, unknown>;
+  const displayName =
+    typeof contentRecord.displayName === 'string'
+      ? contentRecord.displayName
+      : '';
+  const platform =
+    typeof contentRecord.platform === 'string' ? contentRecord.platform : '';
+  const username =
+    typeof contentRecord.username === 'string' ? contentRecord.username : '';
+
   const platformName =
-    content.displayName ||
-    (content.platform
-      ? content.platform.charAt(0).toUpperCase() + content.platform.slice(1)
+    displayName ||
+    (platform
+      ? platform.charAt(0).toUpperCase() + platform.slice(1)
       : 'Social');
 
   return (
     <div className="p-2 border rounded text-sm">
       <div className="font-medium">👤 {platformName}</div>
       <div className="text-gray-500 text-xs">
-        {content.username || content.platform || 'Social media link'}
+        {username || platform || 'Social media link'}
       </div>
     </div>
   );

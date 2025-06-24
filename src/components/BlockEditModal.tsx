@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { BentoBlock } from '@/types/bento';
+import { BentoBlock, BlockFormField } from '@/types/bento';
 import blockRegistry from '@/services/blockRegistry';
 import { FormField, FormTextarea, FormSelect, ModalButtons } from '@/utils';
 
@@ -19,13 +19,10 @@ export default function BlockEditModal({
   isOpen,
   onClose,
   onSave,
-  allBlocks = [],
 }: BlockEditModalProps) {
   const [editedBlock, setEditedBlock] = useState<BentoBlock>(block);
   const [isMounted, setIsMounted] = useState(false);
-  const [isUploading, setIsUploading] = useState(false);
-  const [uploadError, setUploadError] = useState('');
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [uploadError] = useState('');
 
   useEffect(() => {
     setIsMounted(true);
@@ -40,7 +37,7 @@ export default function BlockEditModal({
     onClose();
   };
 
-  const updateContent = (field: string, value: any) => {
+  const updateContent = (field: string, value: unknown) => {
     setEditedBlock(prev => ({
       ...prev,
       content: {
@@ -65,60 +62,10 @@ export default function BlockEditModal({
     });
   };
 
-  const handleFileUpload = async (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
-    if (!allowedTypes.includes(file.type)) {
-      setUploadError('Please select a JPEG, PNG, WebP, or GIF image.');
-      return;
-    }
-
-    if (file.size > 5 * 1024 * 1024) {
-      setUploadError('File size must be less than 5MB.');
-      return;
-    }
-
-    setIsUploading(true);
-    setUploadError('');
-
-    try {
-      const formData = new FormData();
-      formData.append('file', file);
-
-      const response = await fetch('/api/portfolio', {
-        method: 'PUT',
-        body: formData,
-      });
-
-      const result = await response.json();
-
-      if (result.success) {
-        updateContent('url', result.url);
-
-        if (fileInputRef.current) {
-          fileInputRef.current.value = '';
-        }
-      } else {
-        setUploadError(result.error || 'Failed to upload image.');
-      }
-    } catch (error) {
-      setUploadError('Failed to upload image. Please try again.');
-      console.error('Upload error:', error);
-    } finally {
-      setIsUploading(false);
-    }
-  };
-
-  const triggerFileUpload = () => {
-    fileInputRef.current?.click();
-  };
+  // File upload functionality removed - using direct URL input only
 
   const renderEditForm = () => {
-    const blockModule = blockRegistry.get(block.type);
+    const blockModule = blockRegistry.getBlock(block.type);
     if (blockModule?.configForm) {
       return renderDynamicForm(blockModule.configForm.fields);
     }
@@ -131,11 +78,11 @@ export default function BlockEditModal({
     );
   };
 
-  const renderDynamicForm = (fields: any[]) => {
+  const renderDynamicForm = (fields: BlockFormField[]) => {
     return (
       <div className="space-y-4">
         {fields.map(field => {
-          const currentValue =
+          const rawValue =
             field.key === 'title'
               ? editedBlock.title ||
                 editedBlock.content?.title ||
@@ -143,36 +90,44 @@ export default function BlockEditModal({
                 ''
               : editedBlock.content?.[field.key] || field.defaultValue || '';
 
-          if (field.dependencies) {
-            const shouldShow = field.dependencies.every((dep: any) => {
-              const depValue =
-                dep.field === 'title'
-                  ? editedBlock.title
-                  : editedBlock.content?.[dep.field];
-              const condition = dep.condition || 'equals';
+          // Safe type conversion based on field type
+          const stringValue =
+            typeof rawValue === 'string' ? rawValue : String(rawValue || '');
+          const numberValue = typeof rawValue === 'number' ? rawValue : 0;
+          const booleanValue = typeof rawValue === 'boolean' ? rawValue : false;
 
-              switch (condition) {
-                case 'equals':
-                  return depValue === dep.value;
-                case 'not-equals':
-                  return depValue !== dep.value;
-                case 'contains':
-                  return String(depValue).includes(dep.value);
-                case 'greater-than':
-                  return Number(depValue) > Number(dep.value);
-                case 'less-than':
-                  return Number(depValue) < Number(dep.value);
-                default:
-                  return true;
+          if (field.dependencies) {
+            const shouldShow = field.dependencies.every(
+              (dep: { field: string; value: unknown; condition?: string }) => {
+                const depValue =
+                  dep.field === 'title'
+                    ? editedBlock.title
+                    : editedBlock.content?.[dep.field];
+                const condition = dep.condition || 'equals';
+
+                switch (condition) {
+                  case 'equals':
+                    return depValue === dep.value;
+                  case 'not-equals':
+                    return depValue !== dep.value;
+                  case 'contains':
+                    return String(depValue).includes(String(dep.value));
+                  case 'greater-than':
+                    return Number(depValue) > Number(dep.value);
+                  case 'less-than':
+                    return Number(depValue) < Number(dep.value);
+                  default:
+                    return true;
+                }
               }
-            });
+            );
 
             if (!shouldShow) return null;
           }
 
-          const updateValue = (value: any) => {
+          const updateValue = (value: unknown) => {
             if (field.key === 'title') {
-              updateTitle(value);
+              updateTitle(String(value));
             } else {
               updateContent(field.key, value);
             }
@@ -187,10 +142,10 @@ export default function BlockEditModal({
                 <FormField
                   key={field.key}
                   label={field.label}
-                  value={currentValue}
+                  value={stringValue}
                   onChange={updateValue}
                   placeholder={field.placeholder}
-                  type={field.type}
+                  type={field.type === 'password' ? 'text' : field.type}
                   required={field.required}
                   helpText={field.help}
                 />
@@ -207,7 +162,7 @@ export default function BlockEditModal({
                   </label>
                   <input
                     type={field.type}
-                    value={currentValue}
+                    value={field.type === 'number' ? numberValue : stringValue}
                     onChange={e =>
                       updateValue(
                         field.type === 'number'
@@ -239,7 +194,7 @@ export default function BlockEditModal({
                   </label>
                   <input
                     type={field.type}
-                    value={currentValue}
+                    value={stringValue}
                     onChange={e => updateValue(e.target.value)}
                     required={field.required}
                     className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-black focus:border-black"
@@ -261,13 +216,13 @@ export default function BlockEditModal({
                   <div className="flex items-center space-x-2">
                     <input
                       type="color"
-                      value={currentValue || '#000000'}
+                      value={stringValue || '#000000'}
                       onChange={e => updateValue(e.target.value)}
                       className="h-10 w-16 border border-gray-300 rounded cursor-pointer"
                     />
                     <input
                       type="text"
-                      value={currentValue}
+                      value={stringValue}
                       onChange={e => updateValue(e.target.value)}
                       placeholder="#000000"
                       className="flex-1 border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-black focus:border-black"
@@ -283,7 +238,7 @@ export default function BlockEditModal({
                 <FormTextarea
                   key={field.key}
                   label={field.label}
-                  value={currentValue}
+                  value={stringValue}
                   onChange={updateValue}
                   placeholder={field.placeholder}
                   required={field.required}
@@ -296,7 +251,7 @@ export default function BlockEditModal({
                 <FormSelect
                   key={field.key}
                   label={field.label}
-                  value={currentValue}
+                  value={stringValue}
                   onChange={updateValue}
                   options={field.options || []}
                   required={field.required}
@@ -306,60 +261,71 @@ export default function BlockEditModal({
             case 'radio':
               return (
                 <div key={field.key}>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-3">
                     {field.label}
                     {field.required && (
                       <span className="text-red-500 ml-1">*</span>
                     )}
                   </label>
-                  <div className="space-y-2">
-                    {(field.options || []).map((option: any) => (
-                      <div key={option.value} className="flex items-center">
-                        <input
-                          type="radio"
-                          id={`${field.key}-${option.value}`}
-                          name={field.key}
-                          value={option.value}
-                          checked={currentValue === option.value}
-                          onChange={e => updateValue(e.target.value)}
-                          disabled={option.disabled}
-                          className="mr-2"
-                        />
-                        <label
-                          htmlFor={`${field.key}-${option.value}`}
-                          className="text-sm"
-                        >
-                          {option.label}
-                        </label>
-                      </div>
-                    ))}
+                  <div className="space-y-3">
+                    {(field.options || []).map(
+                      (option: {
+                        value: string;
+                        label: string;
+                        disabled?: boolean;
+                      }) => (
+                        <div key={option.value} className="flex items-center">
+                          <input
+                            type="radio"
+                            id={`${field.key}-${option.value}`}
+                            name={field.key}
+                            value={option.value}
+                            checked={stringValue === option.value}
+                            onChange={e => updateValue(e.target.value)}
+                            disabled={option.disabled}
+                            className="h-4 w-4 text-black border-gray-300 focus:ring-black"
+                          />
+                          <label
+                            htmlFor={`${field.key}-${option.value}`}
+                            className="ml-3 text-sm font-medium text-gray-700"
+                          >
+                            {option.label}
+                          </label>
+                        </div>
+                      )
+                    )}
                   </div>
                   {field.help && (
-                    <p className="text-xs text-gray-500 mt-1">{field.help}</p>
+                    <p className="text-xs text-gray-500 mt-2">{field.help}</p>
                   )}
                 </div>
               );
             case 'checkbox':
               return (
-                <div key={field.key} className="flex items-center space-x-2">
+                <div key={field.key} className="flex items-start space-x-3">
                   <input
                     type="checkbox"
                     id={field.key}
-                    checked={currentValue}
+                    checked={booleanValue}
                     onChange={e => updateValue(e.target.checked)}
-                    className="rounded border-gray-300"
+                    className="h-4 w-4 text-black border-gray-300 rounded focus:ring-black mt-1"
                   />
-                  <label htmlFor={field.key} className="text-sm font-medium">
-                    {field.label}
-                  </label>
-                  {field.help && (
-                    <p className="text-xs text-gray-500 ml-6">{field.help}</p>
-                  )}
+                  <div className="flex-1">
+                    <label
+                      htmlFor={field.key}
+                      className="text-sm font-medium text-gray-700"
+                    >
+                      {field.label}
+                    </label>
+                    {field.help && (
+                      <p className="text-xs text-gray-500 mt-1">{field.help}</p>
+                    )}
+                  </div>
                 </div>
               );
             case 'file':
               return (
-                <div key={field.key} className="space-y-2">
+                <div key={field.key} className="space-y-4">
                   <label className="block text-sm font-medium text-gray-700">
                     {field.label}
                     {field.required && (
@@ -367,38 +333,31 @@ export default function BlockEditModal({
                     )}
                   </label>
 
-                  {/* Current file preview  this needs improvement too small image now */}
-                  {currentValue && field.accept?.includes('image') && (
-                    <div className="mb-3">
+                  {/* Current image preview */}
+                  {stringValue && field.accept?.includes('image') && (
+                    <div className="relative">
                       <img
-                        src={currentValue}
+                        src={stringValue}
                         alt="Preview"
-                        className="w-full h-32 object-cover rounded-lg border"
+                        className="w-full h-32 object-cover rounded-xl border border-gray-200 shadow-sm"
                       />
+                      <div className="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-10 transition-opacity rounded-xl" />
                     </div>
                   )}
 
-                  {/* Upload button */}
-                  <button
-                    type="button"
-                    onClick={triggerFileUpload}
-                    disabled={isUploading}
-                    className="w-full inline-flex items-center justify-center px-4 py-3 bg-black text-white rounded-lg hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed font-medium transition-colors"
-                  >
-                    {isUploading ? 'Uploading...' : `Upload ${field.label}`}
-                  </button>
-
                   {/* Manual URL input */}
                   <FormField
-                    label="Or enter URL"
-                    value={currentValue}
+                    label=""
+                    value={stringValue}
                     onChange={updateValue}
-                    placeholder="https://example.com/file"
+                    placeholder="https://example.com/image.jpg"
                     type="url"
                   />
 
                   {uploadError && (
-                    <p className="text-red-500 text-sm">{uploadError}</p>
+                    <div className="flex items-center space-x-2 text-red-600 text-sm">
+                      <span>{uploadError}</span>
+                    </div>
                   )}
 
                   {field.help && (
@@ -407,28 +366,35 @@ export default function BlockEditModal({
                 </div>
               );
             case 'custom':
+              // Allow extensions to provide custom components
               if (field.CustomComponent) {
                 return (
                   <div key={field.key}>
                     <field.CustomComponent
-                      value={currentValue}
+                      value={stringValue}
                       onChange={updateValue}
                       field={field}
                     />
                     {field.help && (
-                      <p className="text-xs text-gray-500 mt-1">{field.help}</p>
+                      <p className="text-xs text-gray-500 mt-2">{field.help}</p>
                     )}
                   </div>
                 );
               }
               return (
-                <div key={field.key} className="text-red-500 text-sm">
+                <div
+                  key={field.key}
+                  className="text-red-500 text-sm bg-red-50 p-3 rounded-lg border border-red-200"
+                >
                   Custom field type requires CustomComponent prop
                 </div>
               );
             default:
               return (
-                <div key={field.key} className="text-yellow-600 text-sm">
+                <div
+                  key={field.key}
+                  className="text-amber-600 text-sm bg-amber-50 p-3 rounded-lg border border-amber-200"
+                >
                   Unsupported field type: {field.type}
                 </div>
               );

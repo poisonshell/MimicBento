@@ -1,10 +1,10 @@
 import BentoGrid from '@/components/BentoGrid';
 import ProfileSidebar from '@/components/ProfileSidebar';
-import { getPortfolioDataStatic } from '@/services/portfolio';
+import { getPortfolioDataServer } from '@/services/portfolioServer';
 import '@/services/blockRegistry';
 
 export default async function Home() {
-  const portfolioData = await getPortfolioDataStatic();
+  const portfolioData = await getPortfolioDataServer();
 
   //no data case handle gracefully
   const profile = portfolioData?.profile || {

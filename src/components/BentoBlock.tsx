@@ -62,14 +62,14 @@ export default function BentoBlockComponent({
     if (!isRegistryReady) {
       return (
         <BlockSkeleton
-          type={block.size as any}
+          type={block.size}
           variant={getSkeletonVariant(block.type)}
         />
       );
     }
 
     // Get block module from registry (including section-header now)
-    const blockModule = blockRegistry.get(block.type);
+    const blockModule = blockRegistry.getBlock(block.type);
 
     if (!blockModule) {
       return (

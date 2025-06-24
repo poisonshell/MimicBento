@@ -9,7 +9,13 @@ import {
 function PhotoBlockComponent({ block }: BlockComponentProps) {
   const { content, title } = block;
 
-  if (!content?.url) {
+  const url = typeof content.url === 'string' ? content.url : '';
+  const alt = typeof content.alt === 'string' ? content.alt : '';
+  const href = typeof content.href === 'string' ? content.href : '';
+  const position =
+    typeof content.position === 'string' ? content.position : 'center';
+
+  if (!url) {
     return (
       <div className="flex items-center justify-center h-full bg-gray-100 text-gray-500">
         <div className="text-center">
@@ -21,13 +27,13 @@ function PhotoBlockComponent({ block }: BlockComponentProps) {
   }
 
   // Get object-position value, default to center
-  const objectPosition = content.position || 'center';
+  const objectPosition = position;
 
   const image = (
     <div className="relative w-full h-full bg-gray-100 overflow-hidden">
       <Image
-        src={content.url}
-        alt={content.alt || title || 'Photo'}
+        src={url}
+        alt={alt || title || 'Photo'}
         fill
         sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
         priority={block.size === 'large' && block.position.y <= 2}
@@ -42,10 +48,10 @@ function PhotoBlockComponent({ block }: BlockComponentProps) {
     </div>
   );
 
-  if (content.href) {
+  if (href) {
     return (
       <a
-        href={content.href}
+        href={href}
         target="_blank"
         rel="noopener noreferrer"
         className="group block w-full h-full"
@@ -62,7 +68,7 @@ function PhotoBlockComponent({ block }: BlockComponentProps) {
 const config: BlockConfig = {
   type: 'photo',
   name: 'Photo',
-  icon: 'Image',
+  icon: 'FiImage',
   description: 'Image or photo',
   defaultSize: 'medium',
   supportedSizes: ['small', 'medium', 'large', 'wide', 'tall'],
@@ -162,19 +168,21 @@ function PhotoPreviewComponent({
   content,
   title,
 }: {
-  content: any;
+  content: Record<string, unknown>;
   title?: string;
 }) {
   return (
     <div className="p-2 border rounded text-sm">
       <div className="font-medium">📷 Photo</div>
       {title && (
-        <div className="text-gray-700 text-xs mt-1 font-medium">"{title}"</div>
+        <div className="text-gray-700 text-xs mt-1 font-medium">
+          &ldquo;{title}&rdquo;
+        </div>
       )}
-      {content.url ? (
+      {typeof content.url === 'string' && content.url ? (
         <div className="text-gray-500 text-xs mt-1">
           Image configured
-          {content.href && ' • Clickable'}
+          {typeof content.href === 'string' && content.href && ' • Clickable'}
         </div>
       ) : (
         <div className="text-gray-500 text-xs mt-1">No image URL set</div>

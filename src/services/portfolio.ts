@@ -1,6 +1,6 @@
 import { BentoData } from '@/types/bento';
 
-// Fetch portfolio data from API
+// Client-side data fetching (for client components like admin page)
 export async function getPortfolioData(): Promise<BentoData> {
   try {
     const response = await fetch('/api/portfolio', {

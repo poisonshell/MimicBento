@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 import { useState, useEffect } from 'react';
-import { createPortal } from 'react-dom';
+// import { createPortal } from 'react-dom';
 import { InlineEditField, InlineEditTextarea, AvatarEditModal } from '@/utils';
 
 interface EditableProfileProps {

@@ -7,11 +7,7 @@ import {
 } from '@/types/bento';
 
 // Section Header Block Component
-function SectionHeaderBlockComponent({
-  block,
-  isMobile = false,
-  isAdmin = false,
-}: BlockComponentProps) {
+function SectionHeaderBlockComponent({ block }: BlockComponentProps) {
   const { content, title } = block;
 
   const sizeClasses = {
@@ -39,16 +35,32 @@ function SectionHeaderBlockComponent({
     'orange-600': 'text-orange-600',
   };
 
-  // Support both new and legacy field names for backward compatibility
-  const size = (content?.textSize ||
-    content?.size ||
-    'medium') as keyof typeof sizeClasses;
-  const align = (content?.textAlign ||
-    content?.align ||
-    'left') as keyof typeof alignClasses;
-  const color = (content?.color || 'gray-800') as keyof typeof colorClasses;
+  // Type-safe content access
+  const contentRecord = content as Record<string, unknown>;
 
-  const displayTitle = title || content?.title || 'Section Header';
+  // Support both new and legacy field names for backward compatibility
+  const textSize =
+    typeof contentRecord.textSize === 'string' ? contentRecord.textSize : '';
+  const legacySize =
+    typeof contentRecord.size === 'string' ? contentRecord.size : '';
+  const textAlign =
+    typeof contentRecord.textAlign === 'string' ? contentRecord.textAlign : '';
+  const legacyAlign =
+    typeof contentRecord.align === 'string' ? contentRecord.align : '';
+  const contentColor =
+    typeof contentRecord.color === 'string' ? contentRecord.color : '';
+  const contentTitle =
+    typeof contentRecord.title === 'string' ? contentRecord.title : '';
+  const subtitle =
+    typeof contentRecord.subtitle === 'string' ? contentRecord.subtitle : '';
+
+  const size = (textSize || legacySize || 'medium') as keyof typeof sizeClasses;
+  const align = (textAlign ||
+    legacyAlign ||
+    'left') as keyof typeof alignClasses;
+  const color = (contentColor || 'gray-800') as keyof typeof colorClasses;
+
+  const displayTitle = title || contentTitle || 'Section Header';
 
   return (
     <div className="flex items-center h-full py-2 px-4 transition-all duration-200">
@@ -58,13 +70,13 @@ function SectionHeaderBlockComponent({
         >
           {displayTitle}
         </h2>
-        {content?.subtitle && (
+        {subtitle && (
           <p
             className={`mt-0.5 text-gray-500 ${
               size === 'small' ? 'text-xs' : 'text-sm'
             } ${alignClasses[align]} leading-tight`}
           >
-            {content.subtitle}
+            {subtitle}
           </p>
         )}
       </div>
@@ -76,8 +88,8 @@ function SectionHeaderBlockComponent({
 const config: BlockConfig = {
   type: 'section-header',
   name: 'Section Header',
-  icon: 'Layout',
-  description: 'Organize content with section headers',
+  icon: 'FiLayout',
+  description: 'Section title and description',
   defaultSize: 'section-header',
   supportedSizes: ['section-header'],
   category: 'layout',
@@ -157,8 +169,9 @@ const configForm: BlockConfigForm = {
       help: 'Color of the section header text',
     },
   ],
-  validate: data => {
-    if (!data.title) {
+  validate: (data: Record<string, unknown>) => {
+    const title = typeof data.title === 'string' ? data.title : '';
+    if (!title) {
       return 'Section title is required';
     }
     return null;
@@ -175,16 +188,24 @@ const getDefaultContent = () => ({
 });
 
 // Preview component for add modal
-const PreviewComponent: React.FC<{ content: any }> = ({ content }) => (
-  <div className="p-3 border rounded-lg bg-gray-50">
-    <h3 className="font-semibold text-sm text-gray-800">
-      {content?.title || 'Section Header'}
-    </h3>
-    {content?.subtitle && (
-      <p className="text-xs text-gray-500 mt-1">{content.subtitle}</p>
-    )}
-  </div>
-);
+const PreviewComponent: React.FC<{ content: Record<string, unknown> }> = ({
+  content,
+}) => {
+  const contentRecord = content as Record<string, unknown>;
+  const title =
+    typeof contentRecord.title === 'string' ? contentRecord.title : '';
+  const subtitle =
+    typeof contentRecord.subtitle === 'string' ? contentRecord.subtitle : '';
+
+  return (
+    <div className="p-3 border rounded-lg bg-gray-50">
+      <h3 className="font-semibold text-sm text-gray-800">
+        {title || 'Section Header'}
+      </h3>
+      {subtitle && <p className="text-xs text-gray-500 mt-1">{subtitle}</p>}
+    </div>
+  );
+};
 
 // Block module export
 export const blockModule: BlockModule = {

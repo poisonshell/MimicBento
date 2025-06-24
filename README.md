@@ -8,7 +8,7 @@ A sleek and customizable portfolio engine inspired by bento.me. This experimenta
 - **📱 Responsive Design** - Seamless experience on desktop and mobile devices
 - **🔧 Admin Dashboard** - Live editing with drag-and-drop functionality
 - **🧩 Extensible Block System** - 15+ field types, custom validation, and plugin architecture
-- **🎯 Modern UI** - Clean design with Lucide React icons and smooth animations
+- **🎯 Modern UI** - Clean design with React icons and smooth animations
 - **📸 File Upload** - Integrated image upload with preview functionality
 - **🎭 Block Types** - Clock, Social, Photo, Video, Music, Map, Note, Link, and custom blocks
 
