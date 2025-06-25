@@ -19,7 +19,6 @@ interface AdminOverlaysProps {
   onDragOver: (e: React.DragEvent, x?: number, y?: number) => void;
   onDragLeave: () => void;
   onDrop: (e: React.DragEvent, x: number, y: number) => void;
-  gridElement?: HTMLElement | null;
 }
 
 // Grid overlay component
@@ -28,7 +27,7 @@ export const GridOverlay: React.FC<{
   totalRows: number;
   maxRow: number;
   draggedBlock: string | null;
-}> = ({ blocks, totalRows, maxRow, draggedBlock }) => {
+}> = ({ blocks, totalRows, maxRow }) => {
   const occupiedCells = createOccupiedCellsMap(blocks);
   const gridCells = createGridCells(totalRows, maxRow, occupiedCells, blocks);
 
@@ -143,7 +142,6 @@ export const DropZones: React.FC<{
   onDragOver: (e: React.DragEvent, x?: number, y?: number) => void;
   onDragLeave: () => void;
   onDrop: (e: React.DragEvent, x: number, y: number) => void;
-  gridElement?: HTMLElement | null;
 }> = ({
   blocks,
   totalRows,
@@ -152,7 +150,6 @@ export const DropZones: React.FC<{
   onDragOver,
   onDragLeave,
   onDrop,
-  gridElement,
 }) => {
   if (!draggedBlock) return null;
 
@@ -167,15 +164,6 @@ export const DropZones: React.FC<{
     (blockId: string, x: number, y: number) =>
       checkCollisionWithHeightConstraint(blocks, blockId, x, y),
     blocks // Pass blocks array for height constraint checking
-  );
-
-  // Check if current hover position has height mismatch
-  const hasHeightMismatch = dropZones.some(
-    zone =>
-      !zone.isDropZone &&
-      zone.heightIncompatible &&
-      dragOverCell?.x === zone.col &&
-      dragOverCell?.y === zone.row
   );
 
   return (
@@ -229,7 +217,6 @@ export const AdminOverlays: React.FC<AdminOverlaysProps> = ({
   onDragOver,
   onDragLeave,
   onDrop,
-  gridElement,
 }) => {
   return (
     <>
@@ -250,7 +237,6 @@ export const AdminOverlays: React.FC<AdminOverlaysProps> = ({
         onDragOver={onDragOver}
         onDragLeave={onDragLeave}
         onDrop={onDrop}
-        gridElement={gridElement}
       />
 
       {/* Add buttons for empty cells */}

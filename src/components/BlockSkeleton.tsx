@@ -2,7 +2,15 @@ import Skeleton, { SkeletonTheme } from 'react-loading-skeleton';
 import 'react-loading-skeleton/dist/skeleton.css';
 
 interface BlockSkeletonProps {
-  type?: 'small' | 'medium' | 'large' | 'wide' | 'tall' | 'section-header';
+  type?:
+    | 'small'
+    | 'medium'
+    | 'large'
+    | 'wide'
+    | 'tall'
+    | 'header-full'
+    | 'header-half'
+    | 'section-header';
   variant?:
     | 'default'
     | 'photo'
@@ -19,7 +27,11 @@ export default function BlockSkeleton({
   type = 'small',
   variant = 'default',
 }: BlockSkeletonProps) {
-  if (type === 'section-header') {
+  if (
+    type === 'section-header' ||
+    type === 'header-full' ||
+    type === 'header-half'
+  ) {
     return (
       <div className="p-4">
         <Skeleton height={20} width="40%" />

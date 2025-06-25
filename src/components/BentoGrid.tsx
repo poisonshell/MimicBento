@@ -124,7 +124,6 @@ export default function BentoGrid({
             onDragOver={dragHandlers.handleDragOver}
             onDragLeave={dragHandlers.handleDragLeave}
             onDrop={dragHandlers.handleDrop}
-            gridElement={gridRef.current}
           />
         )}
 

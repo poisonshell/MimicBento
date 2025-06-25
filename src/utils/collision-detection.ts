@@ -1,7 +1,6 @@
 import { BentoBlock } from '@/types/bento';
 import {
   getBlockDimensions,
-  isHeaderSize,
   isBlockCompatibleWithRow,
 } from './grid-calculations';
 
