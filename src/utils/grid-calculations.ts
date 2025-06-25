@@ -74,32 +74,95 @@ export const calculateMaxRow = (blocks: BentoBlock[]) => {
   }, 0);
 };
 
-export const getNextSize = (currentSize: string, direction: string): string => {
-  // Define size transitions based on direction
+export const getNextSize = (
+  currentSize: string,
+  direction: string,
+  supportedSizes?: string[]
+): string => {
+  // Enhanced size transitions with more intuitive progressions
   const sizeMap: { [key: string]: { [key: string]: string } } = {
     small: {
-      right: 'wide',
-      down: 'medium',
-      corner: 'large',
+      right: 'wide', // 1x1 → 2x1
+      down: 'medium', // 1x1 → 1x2
+      corner: 'large', // 1x1 → 2x2
     },
     medium: {
-      right: 'large',
-      up: 'small',
-      down: 'tall',
+      right: 'large', // 1x2 → 2x2
+      up: 'small', // 1x2 → 1x1
+      down: 'tall', // 1x2 → 1x3
     },
     wide: {
-      left: 'small',
-      down: 'large',
+      left: 'small', // 2x1 → 1x1
+      down: 'large', // 2x1 → 2x2
     },
     large: {
-      left: 'medium',
-      up: 'wide',
+      left: 'medium', // 2x2 → 1x2
+      up: 'wide', // 2x2 → 2x1
     },
     tall: {
-      right: 'large',
-      up: 'medium',
+      right: 'large', // 1x3 → 2x2 (best fit)
+      up: 'medium', // 1x3 → 1x2
     },
   };
 
-  return sizeMap[currentSize]?.[direction] || currentSize;
+  const nextSize = sizeMap[currentSize]?.[direction];
+
+  // If no supported sizes provided, return the next size or current
+  if (!supportedSizes || supportedSizes.length === 0) {
+    return nextSize || currentSize;
+  }
+
+  // Check if the next size is supported
+  if (nextSize && supportedSizes.includes(nextSize)) {
+    return nextSize;
+  }
+
+  // If the direct transition isn't supported, return current size
+  return currentSize;
+};
+
+// Helper function to get all possible sizes a block can be resized to based on its supported sizes
+export const getAvailableSizes = (
+  currentSize: string,
+  supportedSizes?: string[]
+): string[] => {
+  if (!supportedSizes || supportedSizes.length === 0) {
+    // Fallback to generic size map if no supported sizes provided
+    const sizeMap = {
+      small: ['medium', 'wide', 'large'],
+      medium: ['small', 'large', 'tall'],
+      wide: ['small', 'large'],
+      large: ['small', 'medium', 'wide'],
+      tall: ['medium', 'large'],
+    };
+
+    return sizeMap[currentSize as keyof typeof sizeMap] || [];
+  }
+
+  // Return all supported sizes except the current one
+  return supportedSizes.filter(size => size !== currentSize);
+};
+
+// Helper function to check if a resize direction is valid for a block
+export const isResizeDirectionValid = (
+  currentSize: string,
+  direction: string,
+  supportedSizes?: string[]
+): boolean => {
+  const nextSize = getNextSize(currentSize, direction, supportedSizes);
+  return nextSize !== currentSize;
+};
+
+// Helper function to get size dimensions in a more readable format
+export const getSizeInfo = (size: string) => {
+  const info = {
+    small: { cols: 1, rows: 1, label: 'Small (1×1)' },
+    medium: { cols: 1, rows: 2, label: 'Medium (1×2)' },
+    wide: { cols: 2, rows: 1, label: 'Wide (2×1)' },
+    large: { cols: 2, rows: 2, label: 'Large (2×2)' },
+    tall: { cols: 1, rows: 3, label: 'Tall (1×3)' },
+    'section-header': { cols: 4, rows: 1, label: 'Section Header (4×1)' },
+  };
+
+  return info[size as keyof typeof info] || info.small;
 };

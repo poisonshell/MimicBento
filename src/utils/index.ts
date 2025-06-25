@@ -5,7 +5,20 @@ export {
   getRowHeights,
   calculateMaxRow,
   getNextSize,
+  getAvailableSizes,
+  getSizeInfo,
+  isResizeDirectionValid,
 } from './grid-calculations';
+
+export {
+  ResizeHandles,
+  ResizeHandle,
+  createResizeHandlers,
+  useResizeKeyboardShortcuts,
+  getSupportedSizes,
+} from './block-resize';
+
+export type { ResizeState, ResizeHandlers } from './block-resize';
 
 export {
   checkCollision,
@@ -35,3 +48,16 @@ export {
   InlineEditTextarea,
   AvatarEditModal,
 } from './editable-components';
+
+export { MobileLayout } from './mobile-layout';
+
+export {
+  AdminOverlays,
+  GridOverlay,
+  AddButtons,
+  DropZones,
+} from './admin-overlays';
+
+export { createDragHandlers } from './drag-handlers';
+
+export type { DragHandlers, DragState } from './drag-handlers';

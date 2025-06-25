@@ -203,7 +203,7 @@ const config: BlockConfig = {
   icon: 'FiUsers',
   description: 'Social media profile or link',
   defaultSize: 'small',
-  supportedSizes: ['small', 'medium'],
+  supportedSizes: ['small'],
   category: 'social',
   version: '1.0.0',
   author: {

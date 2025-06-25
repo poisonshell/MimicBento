@@ -70,7 +70,7 @@ const config: BlockConfig = {
   name: 'Photo',
   icon: 'FiImage',
   description: 'Image or photo',
-  defaultSize: 'medium',
+  defaultSize: 'small',
   supportedSizes: ['small', 'medium', 'large', 'wide', 'tall'],
   category: 'media',
   version: '1.0.0',
