@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { BentoBlock } from '@/types/bento';
 import {
   createOccupiedCellsMap,
@@ -19,6 +19,7 @@ interface AdminOverlaysProps {
   onDragOver: (e: React.DragEvent, x?: number, y?: number) => void;
   onDragLeave: () => void;
   onDrop: (e: React.DragEvent, x: number, y: number) => void;
+  gridElement?: HTMLElement | null;
 }
 
 // Grid overlay component
@@ -142,6 +143,7 @@ export const DropZones: React.FC<{
   onDragOver: (e: React.DragEvent, x?: number, y?: number) => void;
   onDragLeave: () => void;
   onDrop: (e: React.DragEvent, x: number, y: number) => void;
+  gridElement?: HTMLElement | null;
 }> = ({
   blocks,
   totalRows,
@@ -150,6 +152,7 @@ export const DropZones: React.FC<{
   onDragOver,
   onDragLeave,
   onDrop,
+  gridElement,
 }) => {
   if (!draggedBlock) return null;
 
@@ -198,55 +201,17 @@ export const DropZones: React.FC<{
         return (
           <div
             key={zone.key}
-            className={`absolute border-2 border-dashed pointer-events-none transition-all duration-200 rounded-3xl ${
-              zone.isValidDrop
-                ? 'bg-blue-50 bg-opacity-90 border-blue-400 shadow-lg'
-                : 'bg-red-50 bg-opacity-90 border-red-400 shadow-lg'
-            }`}
+            className="absolute border-2 border-dashed pointer-events-none transition-all duration-200 rounded-3xl"
             style={{
               gridColumn: `${zone.col + 1} / span ${zone.colSpan}`,
               gridRow: `${zone.row + 1} / span ${zone.rowSpan}`,
-              zIndex: 6,
+              zIndex: 999999,
+              backgroundColor: zone.isValidDrop
+                ? 'rgba(59, 130, 246, 0.1)'
+                : 'rgba(239, 68, 68, 0.1)',
+              borderColor: zone.isValidDrop ? '#60a5fa' : '#f87171',
             }}
-          >
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div
-                className={`w-12 h-12 rounded-full shadow-lg flex items-center justify-center ${
-                  zone.isValidDrop ? 'bg-blue-500' : 'bg-red-500'
-                }`}
-              >
-                {zone.isValidDrop ? (
-                  <svg
-                    className="w-6 h-6 text-white"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                    strokeWidth={3}
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M5 13l4 4L19 7"
-                    />
-                  </svg>
-                ) : (
-                  <svg
-                    className="w-6 h-6 text-white"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                    strokeWidth={3}
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M6 18L18 6M6 6l12 12"
-                    />
-                  </svg>
-                )}
-              </div>
-            </div>
-          </div>
+          ></div>
         );
       })}
     </>
@@ -264,6 +229,7 @@ export const AdminOverlays: React.FC<AdminOverlaysProps> = ({
   onDragOver,
   onDragLeave,
   onDrop,
+  gridElement,
 }) => {
   return (
     <>
@@ -284,6 +250,7 @@ export const AdminOverlays: React.FC<AdminOverlaysProps> = ({
         onDragOver={onDragOver}
         onDragLeave={onDragLeave}
         onDrop={onDrop}
+        gridElement={gridElement}
       />
 
       {/* Add buttons for empty cells */}

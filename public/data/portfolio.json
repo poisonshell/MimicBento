@@ -6,27 +6,13 @@
   },
   "blocks": [
     {
-      "id": "PXZNcchUehseo3m6",
-      "type": "link",
-      "title": "Personal Website",
-      "size": "wide",
-      "position": {
-        "x": 0,
-        "y": 1
-      },
-      "content": {
-        "url": "https://johndoe.dev",
-        "description": "johndoe.dev"
-      }
-    },
-    {
       "id": "oLKGuzjF11NMNQea",
       "type": "photo",
       "title": "CTO",
       "size": "small",
       "position": {
         "x": 0,
-        "y": 4
+        "y": 3
       },
       "content": {
         "url": "https://picsum.photos/seed/work1/400/400",
@@ -40,7 +26,7 @@
       "size": "small",
       "position": {
         "x": 1,
-        "y": 4
+        "y": 3
       },
       "content": {
         "url": "https://picsum.photos/seed/work2/400/400",
@@ -54,7 +40,7 @@
       "size": "small",
       "position": {
         "x": 2,
-        "y": 4
+        "y": 3
       },
       "content": {
         "url": "https://picsum.photos/seed/work3/400/400"
@@ -67,38 +53,10 @@
       "size": "small",
       "position": {
         "x": 3,
-        "y": 4
+        "y": 3
       },
       "content": {
         "url": "https://picsum.photos/seed/work4/400/400"
-      }
-    },
-    {
-      "id": "r2pE2XWMaF3SL2wQ",
-      "type": "link",
-      "title": "Another Project",
-      "size": "small",
-      "position": {
-        "x": 0,
-        "y": 6
-      },
-      "content": {
-        "url": "https://github.com/johndoe/another-project",
-        "description": "github.com"
-      }
-    },
-    {
-      "id": "9HmxVKiV0z1pRODE",
-      "type": "link",
-      "title": "VSCode Extension",
-      "size": "small",
-      "position": {
-        "x": 1,
-        "y": 6
-      },
-      "content": {
-        "url": "https://github.com/johndoe/vscode-extension",
-        "description": "github.com"
       }
     },
     {
@@ -107,8 +65,8 @@
       "title": "\"And on, and off, and on, and off, and on, and off, and on, and off, and on, and off.\" — Neil Hilborn",
       "size": "tall",
       "position": {
-        "x": 1,
-        "y": 7
+        "x": 0,
+        "y": 4
       },
       "content": {
         "text": ""
@@ -121,7 +79,7 @@
       "size": "tall",
       "position": {
         "x": 3,
-        "y": 7
+        "y": 4
       },
       "content": {
         "url": "https://picsum.photos/seed/project1/400/800"
@@ -134,39 +92,10 @@
       "size": "tall",
       "position": {
         "x": 2,
-        "y": 7
+        "y": 4
       },
       "content": {
         "url": "https://picsum.photos/seed/project2/400/800"
-      }
-    },
-    {
-      "id": "tgvjnYT9M2zOVQlm",
-      "type": "link",
-      "title": "Certifications",
-      "size": "wide",
-      "position": {
-        "x": 0,
-        "y": 10
-      },
-      "content": {
-        "url": "https://www.credly.com/users/johndoe",
-        "description": "credly.com"
-      }
-    },
-    {
-      "id": "block-1750658138728-nvmuktczx",
-      "type": "photo",
-      "title": "Me",
-      "content": {
-        "url": "/uploads/1750658148374-adec7196759ee45a8c427d023b59640d.png",
-        "alt": "",
-        "position": "center"
-      },
-      "size": "small",
-      "position": {
-        "x": 2,
-        "y": 6
       }
     },
     {
@@ -175,15 +104,15 @@
       "title": "YouTube",
       "content": {
         "platform": "youtube",
-        "url": "sdfsdf",
-        "username": "sdfsf",
+        "url": "@johndoe",
+        "username": "@johndoe",
         "displayName": "",
         "description": ""
       },
       "size": "small",
       "position": {
         "x": 0,
-        "y": 0
+        "y": 1
       }
     },
     {
@@ -192,14 +121,14 @@
       "title": "X",
       "content": {
         "platform": "x",
-        "url": "@poisonshell",
-        "username": "@poisonshell",
+        "url": "@johndoe",
+        "username": "@johndoe",
         "displayName": "",
         "description": ""
       },
       "size": "small",
       "position": {
-        "x": 1,
+        "x": 0,
         "y": 0
       }
     },
@@ -211,25 +140,25 @@
         "timezone": "auto",
         "format": "24h"
       },
-      "size": "small",
+      "size": "medium",
       "position": {
-        "x": 2,
-        "y": 10
+        "x": 1,
+        "y": 4
       }
     },
     {
       "id": "block-1750834543229-30ujmxvr6",
       "type": "photo",
-      "title": "New Block",
+      "title": "Ai Art",
       "content": {
         "url": "/uploads/1750834547754-7a888fce61553c4b7da03edd361339ed.jpg",
         "alt": "",
         "position": "center",
         "href": ""
       },
-      "size": "large",
+      "size": "medium",
       "position": {
-        "x": 2,
+        "x": 3,
         "y": 0
       }
     },
@@ -241,18 +170,18 @@
         "location": "New York",
         "zoom": 12
       },
-      "size": "wide",
+      "size": "large",
       "position": {
-        "x": 0,
-        "y": 2
+        "x": 1,
+        "y": 0
       }
     },
     {
-      "id": "block-1750838137648-6xh8yqt7w",
+      "id": "block-1750885854682-1hpf4uk35",
       "type": "text-header",
-      "title": "New Block",
+      "title": "Work",
       "content": {
-        "title": "Project",
+        "title": "Work",
         "subtitle": "",
         "textAlign": "left",
         "textSize": "medium",
@@ -263,24 +192,26 @@
       "size": "header-half",
       "position": {
         "x": 0,
-        "y": 3
+        "y": 2
       }
     },
     {
-      "id": "block-1750843014889-wzipbg2s5",
-      "type": "section-header",
-      "title": "",
+      "id": "block-1750885873016-gxldvddea",
+      "type": "text-header",
+      "title": "Fun",
       "content": {
-        "title": "Work",
-        "subtitle": "",
+        "title": "Projects",
+        "subtitle": "Projects",
         "textAlign": "left",
         "textSize": "medium",
-        "color": "gray-800"
+        "color": "black",
+        "showIcon": false,
+        "icon": "rocket"
       },
-      "size": "header-full",
+      "size": "header-half",
       "position": {
-        "x": 0,
-        "y": 5
+        "x": 2,
+        "y": 2
       }
     }
   ]

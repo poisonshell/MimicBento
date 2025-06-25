@@ -2,7 +2,7 @@
 
 import { BentoBlock } from '@/types/bento';
 import BentoBlockComponent from './BentoBlock';
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import {
   getSizeClasses,
   getRowHeights,
@@ -78,6 +78,9 @@ export default function BentoGrid({
     onBlockPositionChange
   );
 
+  // Grid element ref for portal positioning
+  const gridRef = useRef<HTMLDivElement>(null);
+
   // Use keyboard shortcuts hook
   useResizeKeyboardShortcuts(isAdmin, showResizeHints, blocks, resizeHandlers);
 
@@ -101,6 +104,7 @@ export default function BentoGrid({
   return (
     <div className="w-full overflow-hidden">
       <div
+        ref={gridRef}
         className="grid gap-4 lg:gap-6 xl:gap-10 relative"
         style={{
           gridTemplateColumns: 'repeat(4, 175px)',
@@ -120,6 +124,7 @@ export default function BentoGrid({
             onDragOver={dragHandlers.handleDragOver}
             onDragLeave={dragHandlers.handleDragLeave}
             onDrop={dragHandlers.handleDrop}
+            gridElement={gridRef.current}
           />
         )}
 
@@ -143,9 +148,10 @@ export default function BentoGrid({
               onMouseEnter={() => setShowResizeHints(block.id)}
               onMouseLeave={e => {
                 // Keep handles visible if mouse is moving to a resize handle
-                const relatedTarget = e.relatedTarget as HTMLElement;
+                const relatedTarget = e.relatedTarget;
                 const isMovingToHandle =
                   relatedTarget &&
+                  relatedTarget instanceof Element &&
                   relatedTarget.closest('[data-resize-handle]');
                 if (!isMovingToHandle) {
                   setShowResizeHints(null);
