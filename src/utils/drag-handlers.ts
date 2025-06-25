@@ -1,11 +1,12 @@
 import { BentoBlock } from '@/types/bento';
-import { createDragImage, checkCollision } from '@/utils';
+import { createDragImage, checkCollisionWithHeightConstraint } from '@/utils';
 
 export interface DragHandlers {
   handleDragStart: (e: React.DragEvent, blockId: string) => void;
   handleDragOver: (e: React.DragEvent, x?: number, y?: number) => void;
   handleDragLeave: () => void;
   handleDrop: (e: React.DragEvent, x: number, y: number) => void;
+  handleDragEnd: () => void;
 }
 
 export interface DragState {
@@ -56,10 +57,23 @@ export const createDragHandlers = (
       );
       const finalX = draggedBlockData?.size === 'section-header' ? 0 : x;
 
-      if (!checkCollision(blocks, dragState.draggedBlock, finalX, y)) {
+      if (
+        !checkCollisionWithHeightConstraint(
+          blocks,
+          dragState.draggedBlock,
+          finalX,
+          y
+        )
+      ) {
         onBlockPositionChange(dragState.draggedBlock, { x: finalX, y });
       }
     }
+    setDragState.setDraggedBlock(null);
+    setDragState.setDragOverCell(null);
+  };
+
+  const handleDragEnd = () => {
+    // Always clear drag state when drag operation ends, regardless of success
     setDragState.setDraggedBlock(null);
     setDragState.setDragOverCell(null);
   };
@@ -69,5 +83,6 @@ export const createDragHandlers = (
     handleDragOver,
     handleDragLeave,
     handleDrop,
+    handleDragEnd,
   };
 };

@@ -1,11 +1,12 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { BentoBlock } from '@/types/bento';
 import {
   createOccupiedCellsMap,
   createGridCells,
   createDropZones,
   getDraggedBlockSize,
-  checkCollision,
+  checkCollisionWithHeightConstraint,
+  isHeaderSize,
 } from '@/utils';
 
 interface AdminOverlaysProps {
@@ -27,10 +28,8 @@ export const GridOverlay: React.FC<{
   maxRow: number;
   draggedBlock: string | null;
 }> = ({ blocks, totalRows, maxRow, draggedBlock }) => {
-  if (!draggedBlock) return null;
-
   const occupiedCells = createOccupiedCellsMap(blocks);
-  const gridCells = createGridCells(totalRows, maxRow, occupiedCells);
+  const gridCells = createGridCells(totalRows, maxRow, occupiedCells, blocks);
 
   return (
     <>
@@ -70,11 +69,21 @@ export const AddButtons: React.FC<{
   const occupiedCells = createOccupiedCellsMap(blocks);
   const addButtons = [];
 
+  // Find rows that contain header blocks
+  const headerRows = new Set<number>();
+  blocks.forEach(block => {
+    if (isHeaderSize(block.size) || block.type === 'section-header') {
+      headerRows.add(block.position.y);
+    }
+  });
+
   // Add buttons for empty cells
   for (let row = 0; row <= maxRow + 2; row++) {
     for (let col = 0; col < 4; col++) {
       const cellKey = `${col}-${row}`;
       if (!occupiedCells.has(cellKey)) {
+        const isHeaderRow = headerRows.has(row);
+
         addButtons.push(
           <div
             key={`add-${cellKey}`}
@@ -86,11 +95,17 @@ export const AddButtons: React.FC<{
           >
             <button
               onClick={() => onAddBlock({ x: col, y: row })}
-              className="w-full h-full min-h-[100px] border-2 border-dashed border-gray-300 hover:border-blue-400 bg-gray-50 hover:bg-blue-50 rounded-3xl transition-all duration-200 opacity-60 hover:opacity-100 flex items-center justify-center z-10"
+              className={`w-full h-full border-2 border-dashed border-gray-300 hover:border-blue-400 bg-gray-50 hover:bg-blue-50 rounded-3xl transition-all duration-200 opacity-60 hover:opacity-100 flex items-center justify-center z-10 ${
+                isHeaderRow ? '' : 'min-h-[100px]'
+              }`}
             >
-              <div className="flex flex-col items-center space-y-2 text-gray-400 hover:text-blue-500">
+              <div
+                className={`flex flex-col items-center text-gray-400 hover:text-blue-500 ${
+                  isHeaderRow ? 'space-y-1' : 'space-y-2'
+                }`}
+              >
                 <svg
-                  className="w-8 h-8"
+                  className={isHeaderRow ? 'w-4 h-4' : 'w-8 h-8'}
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -102,7 +117,11 @@ export const AddButtons: React.FC<{
                     d="M12 4v16m8-8H4"
                   />
                 </svg>
-                <span className="text-sm font-medium">Add Block</span>
+                <span
+                  className={`font-medium ${isHeaderRow ? 'text-xs' : 'text-sm'}`}
+                >
+                  Add Block
+                </span>
               </div>
             </button>
           </div>
@@ -143,7 +162,17 @@ export const DropZones: React.FC<{
     dragOverCell,
     draggedBlock,
     (blockId: string, x: number, y: number) =>
-      checkCollision(blocks, blockId, x, y)
+      checkCollisionWithHeightConstraint(blocks, blockId, x, y),
+    blocks // Pass blocks array for height constraint checking
+  );
+
+  // Check if current hover position has height mismatch
+  const hasHeightMismatch = dropZones.some(
+    zone =>
+      !zone.isDropZone &&
+      zone.heightIncompatible &&
+      dragOverCell?.x === zone.col &&
+      dragOverCell?.y === zone.row
   );
 
   return (
@@ -182,10 +211,40 @@ export const DropZones: React.FC<{
           >
             <div className="absolute inset-0 flex items-center justify-center">
               <div
-                className={`w-8 h-8 rounded-full shadow-lg ${
+                className={`w-12 h-12 rounded-full shadow-lg flex items-center justify-center ${
                   zone.isValidDrop ? 'bg-blue-500' : 'bg-red-500'
                 }`}
-              />
+              >
+                {zone.isValidDrop ? (
+                  <svg
+                    className="w-6 h-6 text-white"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    strokeWidth={3}
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M5 13l4 4L19 7"
+                    />
+                  </svg>
+                ) : (
+                  <svg
+                    className="w-6 h-6 text-white"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    strokeWidth={3}
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M6 18L18 6M6 6l12 12"
+                    />
+                  </svg>
+                )}
+              </div>
             </div>
           </div>
         );

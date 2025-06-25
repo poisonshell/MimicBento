@@ -8,6 +8,7 @@ export {
   getAvailableSizes,
   getSizeInfo,
   isResizeDirectionValid,
+  isHeaderSize,
 } from './grid-calculations';
 
 export {
@@ -24,6 +25,9 @@ export {
   checkCollision,
   checkResizeCollision,
   checkCollisionWithSize,
+  checkCollisionWithHeightConstraint,
+  checkDropHeightConstraint,
+  checkResizeCollisionWithHeightConstraint,
 } from './collision-detection';
 
 export { createDragImage, sortBlocksForMobile } from './drag-drop';

@@ -187,39 +187,6 @@
       }
     },
     {
-      "id": "block-1750738424662-vx7nov0d8",
-      "type": "section-header",
-      "title": "MoP",
-      "content": {
-        "subtitle": "",
-        "textAlign": "left",
-        "textSize": "medium",
-        "color": "gray-800"
-      },
-      "size": "section-header",
-      "position": {
-        "x": 0,
-        "y": 3
-      }
-    },
-    {
-      "id": "block-1750738446278-gdjujtugj",
-      "type": "section-header",
-      "title": "",
-      "content": {
-        "title": "Projects",
-        "subtitle": "",
-        "textAlign": "left",
-        "textSize": "medium",
-        "color": "gray-800"
-      },
-      "size": "section-header",
-      "position": {
-        "x": 0,
-        "y": 5
-      }
-    },
-    {
       "id": "block-1750739830311-mn7lt7u2y",
       "type": "social",
       "title": "X",
@@ -251,19 +218,69 @@
       }
     },
     {
-      "id": "block-1750829805072-nbc7btgfe",
+      "id": "block-1750834543229-30ujmxvr6",
       "type": "photo",
       "title": "New Block",
       "content": {
-        "url": "/uploads/1750829812522-281b13bdcf5363f342dc99e7ffd3743c.jpg",
+        "url": "/uploads/1750834547754-7a888fce61553c4b7da03edd361339ed.jpg",
         "alt": "",
         "position": "center",
         "href": ""
       },
-      "size": "wide",
+      "size": "large",
       "position": {
         "x": 2,
         "y": 0
+      }
+    },
+    {
+      "id": "block-1750834563250-f9yvtn23w",
+      "type": "map",
+      "title": "New Block",
+      "content": {
+        "location": "New York",
+        "zoom": 12
+      },
+      "size": "wide",
+      "position": {
+        "x": 0,
+        "y": 2
+      }
+    },
+    {
+      "id": "block-1750838137648-6xh8yqt7w",
+      "type": "text-header",
+      "title": "New Block",
+      "content": {
+        "title": "Project",
+        "subtitle": "",
+        "textAlign": "left",
+        "textSize": "medium",
+        "color": "gray-800",
+        "showIcon": false,
+        "icon": ""
+      },
+      "size": "header-half",
+      "position": {
+        "x": 0,
+        "y": 3
+      }
+    },
+    {
+      "id": "block-1750843014889-wzipbg2s5",
+      "type": "section-header",
+      "title": "",
+      "content": {
+        "title": "Work",
+        "subtitle": "",
+        "textAlign": "left",
+        "textSize": "medium",
+        "color": "gray-800"
+      },
+      "size": "header-full",
+      "position": {
+        "x": 0,
+        "y": 5
       }
     }
   ]

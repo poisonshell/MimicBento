@@ -1,7 +1,7 @@
 import React from 'react';
 import { BentoBlock } from '@/types/bento';
 import { blockRegistry } from '@/services/blockRegistry';
-import { getNextSize, checkResizeCollision } from '@/utils';
+import { getNextSize, checkResizeCollisionWithHeightConstraint } from '@/utils';
 
 // Types for resize functionality
 export interface ResizeState {
@@ -50,7 +50,7 @@ export const createResizeHandlers = (
       if (
         block &&
         supportedSizes.includes(newSize) &&
-        !checkResizeCollision(blocks, blockId, newSize)
+        !checkResizeCollisionWithHeightConstraint(blocks, blockId, newSize)
       ) {
         setState.setResizingBlock(blockId);
         // Add smooth transition delay
@@ -71,7 +71,7 @@ export const createResizeHandlers = (
     if (
       block &&
       supportedSizes.includes(newSize) &&
-      !checkResizeCollision(blocks, blockId, newSize)
+      !checkResizeCollisionWithHeightConstraint(blocks, blockId, newSize)
     ) {
       setState.setResizePreview({ blockId, size: newSize });
     }
@@ -273,6 +273,7 @@ export const ResizeHandles: React.FC<ResizeHandlesProps> = ({
   resizePreview,
   resizeHandlers,
 }) => {
+  // Don't show resize handles for legacy section-header blocks (they should be migrated)
   if (!isAdmin || isDragging || block.type === 'section-header') {
     return null;
   }

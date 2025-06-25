@@ -6,8 +6,8 @@ import {
   BlockConfigForm,
 } from '@/types/bento';
 
-// Section Header Block Component
-function SectionHeaderBlockComponent({ block }: BlockComponentProps) {
+// Text Header Block Component - For flexible text content with 60px height
+function TextHeaderBlockComponent({ block }: BlockComponentProps) {
   const { content, title } = block;
 
   const sizeClasses = {
@@ -15,6 +15,7 @@ function SectionHeaderBlockComponent({ block }: BlockComponentProps) {
     medium: 'text-base',
     large: 'text-lg',
     'extra-large': 'text-xl',
+    '2xl': 'text-2xl',
   };
 
   const alignClasses = {
@@ -33,43 +34,53 @@ function SectionHeaderBlockComponent({ block }: BlockComponentProps) {
     'purple-600': 'text-purple-600',
     'red-600': 'text-red-600',
     'orange-600': 'text-orange-600',
+    'indigo-600': 'text-indigo-600',
+    'pink-600': 'text-pink-600',
   };
 
   // Type-safe content access
   const contentRecord = content as Record<string, unknown>;
 
-  // Support both new and legacy field names for backward compatibility
   const textSize =
-    typeof contentRecord.textSize === 'string' ? contentRecord.textSize : '';
-  const legacySize =
-    typeof contentRecord.size === 'string' ? contentRecord.size : '';
+    typeof contentRecord.textSize === 'string'
+      ? contentRecord.textSize
+      : 'medium';
   const textAlign =
-    typeof contentRecord.textAlign === 'string' ? contentRecord.textAlign : '';
-  const legacyAlign =
-    typeof contentRecord.align === 'string' ? contentRecord.align : '';
+    typeof contentRecord.textAlign === 'string'
+      ? contentRecord.textAlign
+      : 'left';
   const contentColor =
-    typeof contentRecord.color === 'string' ? contentRecord.color : '';
+    typeof contentRecord.color === 'string' ? contentRecord.color : 'gray-800';
   const contentTitle =
     typeof contentRecord.title === 'string' ? contentRecord.title : '';
   const subtitle =
     typeof contentRecord.subtitle === 'string' ? contentRecord.subtitle : '';
+  const showIcon =
+    typeof contentRecord.showIcon === 'boolean'
+      ? contentRecord.showIcon
+      : false;
+  const iconEmoji =
+    typeof contentRecord.icon === 'string' ? contentRecord.icon : '';
 
-  const size = (textSize || legacySize || 'medium') as keyof typeof sizeClasses;
-  const align = (textAlign ||
-    legacyAlign ||
-    'left') as keyof typeof alignClasses;
-  const color = (contentColor || 'gray-800') as keyof typeof colorClasses;
+  const size = textSize as keyof typeof sizeClasses;
+  const align = textAlign as keyof typeof alignClasses;
+  const color = contentColor as keyof typeof colorClasses;
 
-  const displayTitle = title || contentTitle || 'Section Header';
+  const displayTitle = title || contentTitle || 'Text Header';
 
   return (
-    <div className="flex items-center h-full py-2 px-4 transition-all duration-200">
+    <div className="flex items-center h-full py-2 px-4 transition-all duration-200 bg-white rounded-xl">
       <div className="w-full">
-        <h2
-          className={`font-bold ${sizeClasses[size]} ${alignClasses[align]} ${colorClasses[color]} transition-colors leading-tight`}
-        >
-          {displayTitle}
-        </h2>
+        <div className={`flex items-center gap-2 ${alignClasses[align]}`}>
+          {showIcon && iconEmoji && (
+            <span className="text-lg">{iconEmoji}</span>
+          )}
+          <h2
+            className={`font-bold ${sizeClasses[size]} ${colorClasses[color]} transition-colors leading-tight`}
+          >
+            {displayTitle}
+          </h2>
+        </div>
         {subtitle && (
           <p
             className={`mt-0.5 text-gray-500 ${
@@ -84,16 +95,16 @@ function SectionHeaderBlockComponent({ block }: BlockComponentProps) {
   );
 }
 
-// Block configuration - Updated to use new header sizes
+// Block configuration
 const config: BlockConfig = {
-  type: 'section-header',
-  name: 'Section Header',
-  icon: 'FiLayout',
-  description: 'Full-width section title and description (60px height)',
-  defaultSize: 'header-full',
+  type: 'text-header',
+  name: 'Text Header',
+  icon: 'FiType',
+  description: 'Flexible text header for sections and content (60px height)',
+  defaultSize: 'header-half',
   supportedSizes: ['header-full', 'header-half'],
-  category: 'layout',
-  version: '2.0.0',
+  category: 'content',
+  version: '1.0.0',
   author: {
     name: 'MimicBento',
   },
@@ -104,14 +115,14 @@ const configForm: BlockConfigForm = {
   fields: [
     {
       key: 'title',
-      label: 'Section Title',
+      label: 'Header Text',
       type: 'text',
       required: true,
-      placeholder: 'Enter section title',
-      help: 'The main title for this section',
+      placeholder: 'Enter header text',
+      help: 'The main text for this header',
       validation: {
-        max: 80,
-        message: 'Title must be 80 characters or less',
+        max: 100,
+        message: 'Header text must be 100 characters or less',
       },
     },
     {
@@ -119,10 +130,34 @@ const configForm: BlockConfigForm = {
       label: 'Subtitle (optional)',
       type: 'text',
       placeholder: 'Optional subtitle',
-      help: 'Additional description for the section (keep short for 60px height)',
+      help: 'Additional description text (keep short for 60px height)',
       validation: {
         max: 120,
         message: 'Subtitle must be 120 characters or less',
+      },
+    },
+    {
+      key: 'showIcon',
+      label: 'Show Icon',
+      type: 'checkbox',
+      defaultValue: false,
+      help: 'Add an emoji icon to the header',
+    },
+    {
+      key: 'icon',
+      label: 'Icon (Emoji)',
+      type: 'text',
+      placeholder: '🚀',
+      help: 'Emoji to display next to the header text',
+      dependencies: [
+        {
+          field: 'showIcon',
+          value: true,
+        },
+      ],
+      validation: {
+        max: 4,
+        message: 'Please use a single emoji',
       },
     },
     {
@@ -135,8 +170,9 @@ const configForm: BlockConfigForm = {
         { value: 'medium', label: 'Medium (16px)' },
         { value: 'large', label: 'Large (18px)' },
         { value: 'extra-large', label: 'Extra Large (20px)' },
+        { value: '2xl', label: '2X Large (24px)' },
       ],
-      help: 'Size of the section header text (optimized for 60px height)',
+      help: 'Size of the header text (optimized for 60px height)',
     },
     {
       key: 'textAlign',
@@ -148,7 +184,7 @@ const configForm: BlockConfigForm = {
         { value: 'center', label: 'Center' },
         { value: 'right', label: 'Right' },
       ],
-      help: 'How to align the section header text',
+      help: 'How to align the header text',
     },
     {
       key: 'color',
@@ -165,26 +201,30 @@ const configForm: BlockConfigForm = {
         { value: 'purple-600', label: 'Purple' },
         { value: 'red-600', label: 'Red' },
         { value: 'orange-600', label: 'Orange' },
+        { value: 'indigo-600', label: 'Indigo' },
+        { value: 'pink-600', label: 'Pink' },
       ],
-      help: 'Color of the section header text',
+      help: 'Color of the header text',
     },
   ],
   validate: (data: Record<string, unknown>) => {
     const title = typeof data.title === 'string' ? data.title : '';
     if (!title) {
-      return 'Section title is required';
+      return 'Header text is required';
     }
     return null;
   },
 };
 
-// Default content when creating a new section header block
+// Default content when creating a new text header block
 const getDefaultContent = () => ({
   title: '',
   subtitle: '',
   textAlign: 'left',
   textSize: 'medium',
   color: 'gray-800',
+  showIcon: false,
+  icon: '',
 });
 
 // Preview component for add modal
@@ -196,13 +236,25 @@ const PreviewComponent: React.FC<{ content: Record<string, unknown> }> = ({
     typeof contentRecord.title === 'string' ? contentRecord.title : '';
   const subtitle =
     typeof contentRecord.subtitle === 'string' ? contentRecord.subtitle : '';
+  const showIcon =
+    typeof contentRecord.showIcon === 'boolean'
+      ? contentRecord.showIcon
+      : false;
+  const icon = typeof contentRecord.icon === 'string' ? contentRecord.icon : '';
 
   return (
-    <div className="p-3 border rounded-lg bg-gray-50">
-      <h3 className="font-semibold text-sm text-gray-800">
-        {title || 'Section Header'}
-      </h3>
-      {subtitle && <p className="text-xs text-gray-500 mt-1">{subtitle}</p>}
+    <div className="p-3 border rounded-lg bg-gray-50 h-16 flex items-center">
+      <div className="flex items-center gap-2">
+        {showIcon && icon && <span className="text-sm">{icon}</span>}
+        <div>
+          <h3 className="font-semibold text-sm text-gray-800">
+            {title || 'Text Header'}
+          </h3>
+          {subtitle && (
+            <p className="text-xs text-gray-500 mt-0.5">{subtitle}</p>
+          )}
+        </div>
+      </div>
     </div>
   );
 };
@@ -210,11 +262,11 @@ const PreviewComponent: React.FC<{ content: Record<string, unknown> }> = ({
 // Block module export
 export const blockModule: BlockModule = {
   config,
-  Component: SectionHeaderBlockComponent,
+  Component: TextHeaderBlockComponent,
   configForm,
   getDefaultContent,
   PreviewComponent,
 };
 
 // Default export for backward compatibility
-export default SectionHeaderBlockComponent;
+export default TextHeaderBlockComponent;

@@ -17,6 +17,11 @@ export const getSizeClasses = (size: string, isMobile: boolean = false) => {
       return 'col-span-2 row-span-1';
     case 'tall':
       return 'col-span-1 row-span-3';
+    case 'header-full':
+      return 'col-span-4 row-span-1';
+    case 'header-half':
+      return 'col-span-2 row-span-1';
+    // Legacy support - will be migrated to header-full
     case 'section-header':
       return 'col-span-4 row-span-1';
     default:
@@ -28,11 +33,20 @@ export const getBlockDimensions = (size: string) => {
   let colSpan = 1,
     rowSpan = 1;
 
-  if (size === 'section-header') {
-    colSpan = 4;
-    rowSpan = 1;
-  } else if (size === 'wide' || size === 'large') {
-    colSpan = 2;
+  switch (size) {
+    case 'header-full':
+    case 'section-header': // Legacy support
+      colSpan = 4;
+      rowSpan = 1;
+      break;
+    case 'header-half':
+      colSpan = 2;
+      rowSpan = 1;
+      break;
+    case 'wide':
+    case 'large':
+      colSpan = 2;
+      break;
   }
 
   if (size === 'medium' || size === 'large') {
@@ -42,6 +56,101 @@ export const getBlockDimensions = (size: string) => {
   }
 
   return { colSpan, rowSpan };
+};
+
+// Helper function to check if a size is a header type (60px height)
+export const isHeaderSize = (size: string): boolean => {
+  return ['header-full', 'header-half', 'section-header'].includes(size);
+};
+
+// Helper function to get the height category of a block size
+export const getHeightCategory = (size: string): 'header' | 'regular' => {
+  return isHeaderSize(size) ? 'header' : 'regular';
+};
+
+// Check if a row has header blocks (60px height constraint)
+export const getRowHeightConstraint = (
+  blocks: BentoBlock[],
+  row: number
+): 'header' | 'regular' | null => {
+  const blocksInRow = blocks.filter(block => block.position.y === row);
+
+  if (blocksInRow.length === 0) {
+    return null; // No constraint, row is empty
+  }
+
+  // Check if any block in the row is a header type
+  const hasHeaderBlocks = blocksInRow.some(
+    block => isHeaderSize(block.size) || block.type === 'section-header'
+  );
+
+  if (hasHeaderBlocks) {
+    return 'header'; // Row is constrained to 60px height
+  }
+
+  return 'regular'; // Row has regular 175px height blocks
+};
+
+// Check if a block size is compatible with the row's height constraint
+export const isBlockCompatibleWithRow = (
+  blocks: BentoBlock[],
+  blockSize: string,
+  targetRow: number,
+  excludeBlockId?: string
+): boolean => {
+  // Filter out the block being moved if specified
+  const relevantBlocks = excludeBlockId
+    ? blocks.filter(b => b.id !== excludeBlockId)
+    : blocks;
+
+  const rowConstraint = getRowHeightConstraint(relevantBlocks, targetRow);
+  const blockHeightCategory = getHeightCategory(blockSize);
+
+  // If row is empty, any block type is allowed
+  if (rowConstraint === null) {
+    return true;
+  }
+
+  // Block must match the row's height constraint
+  return rowConstraint === blockHeightCategory;
+};
+
+// Get available positions for a block size considering height constraints
+export const getValidDropPositions = (
+  blocks: BentoBlock[],
+  blockSize: string,
+  totalRows: number,
+  excludeBlockId?: string
+): Array<{ x: number; y: number }> => {
+  const validPositions: Array<{ x: number; y: number }> = [];
+  const { colSpan, rowSpan } = getBlockDimensions(blockSize);
+
+  for (let row = 0; row < totalRows; row++) {
+    // Check if block is compatible with this row's height constraint
+    if (!isBlockCompatibleWithRow(blocks, blockSize, row, excludeBlockId)) {
+      continue;
+    }
+
+    for (let col = 0; col < 4; col++) {
+      // For full-width headers, only allow dropping at x=0
+      if (
+        (blockSize === 'header-full' || blockSize === 'section-header') &&
+        col !== 0
+      ) {
+        continue;
+      }
+
+      // Check if this position can fit the block
+      const canFit = col + colSpan <= 4 && row + rowSpan <= totalRows;
+      if (!canFit) {
+        continue;
+      }
+
+      validPositions.push({ x: col, y: row });
+    }
+  }
+
+  return validPositions;
 };
 
 export const getDraggedBlockSize = (
@@ -59,10 +168,10 @@ export const getRowHeights = (totalRows: number, blocks: BentoBlock[]) => {
   const rowHeights: string[] = [];
   for (let row = 0; row < totalRows; row++) {
     const blocksInRow = blocks.filter(block => block.position.y === row);
-    const hasSectionHeader = blocksInRow.some(
-      block => block.type === 'section-header'
+    const hasHeaderBlock = blocksInRow.some(
+      block => isHeaderSize(block.size) || block.type === 'section-header'
     );
-    rowHeights.push(hasSectionHeader ? '60px' : '175px');
+    rowHeights.push(hasHeaderBlock ? '60px' : '175px');
   }
   return rowHeights.join(' ');
 };
@@ -79,7 +188,7 @@ export const getNextSize = (
   direction: string,
   supportedSizes?: string[]
 ): string => {
-  // Enhanced size transitions with more intuitive progressions
+  // Enhanced size transitions with header sizes included
   const sizeMap: { [key: string]: { [key: string]: string } } = {
     small: {
       right: 'wide', // 1x1 → 2x1
@@ -102,6 +211,19 @@ export const getNextSize = (
     tall: {
       right: 'large', // 1x3 → 2x2 (best fit)
       up: 'medium', // 1x3 → 1x2
+    },
+    'header-half': {
+      right: 'header-full', // 2x1 header → 4x1 header
+      left: 'header-half', // Stay same (no smaller header)
+    },
+    'header-full': {
+      left: 'header-half', // 4x1 header → 2x1 header
+      right: 'header-full', // Stay same (already full width)
+    },
+    // Legacy support
+    'section-header': {
+      left: 'header-half', // Can shrink to half-width header
+      right: 'header-full', // Stay as full header
     },
   };
 
@@ -134,6 +256,9 @@ export const getAvailableSizes = (
       wide: ['small', 'large'],
       large: ['small', 'medium', 'wide'],
       tall: ['medium', 'large'],
+      'header-half': ['header-full'],
+      'header-full': ['header-half'],
+      'section-header': ['header-full', 'header-half'], // Legacy support
     };
 
     return sizeMap[currentSize as keyof typeof sizeMap] || [];
@@ -156,12 +281,30 @@ export const isResizeDirectionValid = (
 // Helper function to get size dimensions in a more readable format
 export const getSizeInfo = (size: string) => {
   const info = {
-    small: { cols: 1, rows: 1, label: 'Small (1×1)' },
-    medium: { cols: 1, rows: 2, label: 'Medium (1×2)' },
-    wide: { cols: 2, rows: 1, label: 'Wide (2×1)' },
-    large: { cols: 2, rows: 2, label: 'Large (2×2)' },
-    tall: { cols: 1, rows: 3, label: 'Tall (1×3)' },
-    'section-header': { cols: 4, rows: 1, label: 'Section Header (4×1)' },
+    small: { cols: 1, rows: 1, label: 'Small (1×1)', height: '175px' },
+    medium: { cols: 1, rows: 2, label: 'Medium (1×2)', height: '175px' },
+    wide: { cols: 2, rows: 1, label: 'Wide (2×1)', height: '175px' },
+    large: { cols: 2, rows: 2, label: 'Large (2×2)', height: '175px' },
+    tall: { cols: 1, rows: 3, label: 'Tall (1×3)', height: '175px' },
+    'header-full': {
+      cols: 4,
+      rows: 1,
+      label: 'Full Header (4×1)',
+      height: '60px',
+    },
+    'header-half': {
+      cols: 2,
+      rows: 1,
+      label: 'Half Header (2×1)',
+      height: '60px',
+    },
+    // Legacy support
+    'section-header': {
+      cols: 4,
+      rows: 1,
+      label: 'Section Header (4×1)',
+      height: '60px',
+    },
   };
 
   return info[size as keyof typeof info] || info.small;

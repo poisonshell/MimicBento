@@ -127,7 +127,10 @@ export default function BentoGrid({
         {blocks.map(block => {
           const sizeClasses = getSizeClasses(block.size);
           const isDragging = draggedBlock === block.id;
-          const isSectionHeader = block.type === 'section-header';
+          const isHeaderType =
+            ['section-header', 'header-full', 'header-half'].includes(
+              block.size
+            ) || block.type === 'section-header';
 
           return (
             <div
@@ -136,19 +139,20 @@ export default function BentoGrid({
                 isAdmin && !['photo', 'section-header'].includes(block.type)
               }
               onDragStart={e => dragHandlers.handleDragStart(e, block.id)}
+              onDragEnd={dragHandlers.handleDragEnd}
               onMouseEnter={() => setShowResizeHints(block.id)}
               onMouseLeave={e => {
                 // Keep handles visible if mouse is moving to a resize handle
                 const relatedTarget = e.relatedTarget as HTMLElement;
-                const isMovingToHandle = relatedTarget?.closest(
-                  '[data-resize-handle]'
-                );
+                const isMovingToHandle =
+                  relatedTarget &&
+                  relatedTarget.closest('[data-resize-handle]');
                 if (!isMovingToHandle) {
                   setShowResizeHints(null);
                 }
               }}
               className={`
-                ${isAdmin && !['photo', 'section-header'].includes(block.type) ? 'cursor-move' : ''} 
+                ${isAdmin && !['photo', 'section-header'].includes(block.type) && !isHeaderType ? 'cursor-move' : ''} 
                 relative
                 ${sizeClasses}
                 ${isDragging ? 'opacity-80 z-50' : 'z-10 hover:z-30'}
@@ -167,8 +171,8 @@ export default function BentoGrid({
                 onDelete={onBlockDelete}
               />
 
-              {/* Area indicator for section headers */}
-              {isAdmin && isSectionHeader && !isDragging && (
+              {/* Area indicator for header blocks */}
+              {isAdmin && isHeaderType && !isDragging && (
                 <div className="absolute -top-1 -left-1 -right-1 -bottom-1 border border-dashed border-gray-300 border-opacity-30 pointer-events-none rounded-lg"></div>
               )}
 

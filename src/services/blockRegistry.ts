@@ -144,6 +144,10 @@ class BentoBlockRegistry implements BlockRegistry {
           name: 'SectionHeaderBlock',
           import: () => import('@/components/blocks/SectionHeaderBlock'),
         },
+        {
+          name: 'TextHeaderBlock',
+          import: () => import('@/components/blocks/TextHeaderBlock'),
+        },
       ];
 
       // Register each core block with comprehensive error handling
@@ -440,6 +444,7 @@ class BentoBlockRegistry implements BlockRegistry {
               'social',
               'map',
               'section-header',
+              'text-header',
             ].includes(type)
           ) {
             coreCount++;

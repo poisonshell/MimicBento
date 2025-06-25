@@ -1,30 +1,23 @@
 import { BentoBlock } from '@/types/bento';
-import { getBlockDimensions } from './grid-calculations';
+import {
+  getBlockDimensions,
+  isHeaderSize,
+  isBlockCompatibleWithRow,
+} from './grid-calculations';
 
 export const createOccupiedCellsMap = (blocks: BentoBlock[]) => {
   const occupiedCells = new Set<string>();
 
   blocks.forEach(block => {
-    if (block.size === 'section-header') {
-      // Section headers span all 4 columns and 1 row
-      for (let col = 0; col < 4; col++) {
-        occupiedCells.add(`${col}-${block.position.y}`);
-      }
-    } else {
-      const { colSpan, rowSpan } = getBlockDimensions(block.size);
+    const { colSpan, rowSpan } = getBlockDimensions(block.size);
 
+    for (let row = block.position.y; row < block.position.y + rowSpan; row++) {
       for (
-        let row = block.position.y;
-        row < block.position.y + rowSpan;
-        row++
+        let col = block.position.x;
+        col < block.position.x + colSpan;
+        col++
       ) {
-        for (
-          let col = block.position.x;
-          col < block.position.x + colSpan;
-          col++
-        ) {
-          occupiedCells.add(`${col}-${row}`);
-        }
+        occupiedCells.add(`${col}-${row}`);
       }
     }
   });
@@ -35,9 +28,18 @@ export const createOccupiedCellsMap = (blocks: BentoBlock[]) => {
 export const createGridCells = (
   totalRows: number,
   maxRow: number,
-  occupiedCells: Set<string>
+  occupiedCells: Set<string>,
+  blocks: BentoBlock[] = []
 ) => {
   const gridCells = [];
+
+  // Find rows that contain header blocks
+  const headerRows = new Set<number>();
+  blocks.forEach(block => {
+    if (isHeaderSize(block.size) || block.type === 'section-header') {
+      headerRows.add(block.position.y);
+    }
+  });
 
   for (let row = 0; row < totalRows; row++) {
     for (let col = 0; col < 4; col++) {
@@ -46,12 +48,14 @@ export const createGridCells = (
       if (!occupiedCells.has(cellKey)) {
         // Check if this is a new empty row (beyond current content)
         const isNewRow = row >= maxRow;
+        const isHeaderRow = headerRows.has(row);
 
         gridCells.push({
           key: cellKey,
           col,
           row,
           isNewRow,
+          isHeaderRow,
           cellKey,
         });
       }
@@ -67,16 +71,19 @@ export const createDropZones = (
   draggedBlockData: BentoBlock | undefined,
   dragOverCell: { x: number; y: number } | null,
   draggedBlock: string | null,
-  checkCollisionFn: (blockId: string, x: number, y: number) => boolean
+  checkCollisionFn: (blockId: string, x: number, y: number) => boolean,
+  allBlocks: BentoBlock[] = [] // Add blocks array for height constraint checking
 ) => {
   const dropZones = [];
   const { colSpan, rowSpan } = draggedBlockSize;
-  const isSectionHeader = draggedBlockData?.size === 'section-header';
+  const isFullWidthHeader =
+    draggedBlockData?.size === 'header-full' ||
+    draggedBlockData?.size === 'section-header'; // Legacy support
 
   for (let row = 0; row < totalRows; row++) {
     for (let col = 0; col < 4; col++) {
-      // For section headers, only allow dropping at x=0
-      if (isSectionHeader && col !== 0) {
+      // For full-width headers, only allow dropping at x=0
+      if (isFullWidthHeader && col !== 0) {
         continue;
       }
 
@@ -85,11 +92,22 @@ export const createDropZones = (
       const isHoverStart = dragOverCell?.x === col && dragOverCell?.y === row;
 
       if (isHoverStart && canFit) {
-        // Render the preview for the entire block size
+        // Check regular collision
         const hasCollision = draggedBlock
           ? checkCollisionFn(draggedBlock, col, row)
           : false;
-        const isValidDrop = !hasCollision;
+
+        // Check height constraint compatibility
+        const heightCompatible = draggedBlockData?.size
+          ? isBlockCompatibleWithRow(
+              allBlocks,
+              draggedBlockData.size,
+              row,
+              draggedBlock || undefined
+            )
+          : true;
+
+        const isValidDrop = !hasCollision && heightCompatible;
 
         dropZones.push({
           key: `drop-preview-${col}-${row}`,
@@ -98,11 +116,22 @@ export const createDropZones = (
           colSpan,
           rowSpan,
           isValidDrop,
+          heightIncompatible: !heightCompatible, // Flag for visual feedback
         });
       }
 
-      // Invisible drop zone for each cell (but restrict section headers to x=0)
-      if (!isSectionHeader || col === 0) {
+      // Invisible drop zone for each cell (but restrict full-width headers to x=0)
+      if (!isFullWidthHeader || col === 0) {
+        // Check height compatibility for the invisible drop zone as well
+        const heightCompatible = draggedBlockData?.size
+          ? isBlockCompatibleWithRow(
+              allBlocks,
+              draggedBlockData.size,
+              row,
+              draggedBlock || undefined
+            )
+          : true;
+
         dropZones.push({
           key: `drop-${col}-${row}`,
           col,
@@ -110,6 +139,7 @@ export const createDropZones = (
           colSpan: 1,
           rowSpan: 1,
           isDropZone: true,
+          heightIncompatible: !heightCompatible, // Flag for visual feedback
         });
       }
     }

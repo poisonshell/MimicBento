@@ -1,5 +1,9 @@
 import { BentoBlock } from '@/types/bento';
-import { getBlockDimensions } from './grid-calculations';
+import {
+  getBlockDimensions,
+  isHeaderSize,
+  isBlockCompatibleWithRow,
+} from './grid-calculations';
 
 export const checkCollision = (
   blocks: BentoBlock[],
@@ -76,6 +80,33 @@ export const checkResizeCollision = (
   );
 };
 
+// Enhanced resize collision check that includes height constraints
+export const checkResizeCollisionWithHeightConstraint = (
+  blocks: BentoBlock[],
+  blockId: string,
+  newSize: string
+): boolean => {
+  const block = blocks.find(b => b.id === blockId);
+  if (!block) return false;
+
+  // Get the new size dimensions
+  const { colSpan, rowSpan } = getBlockDimensions(newSize);
+
+  // Check if it fits in the grid
+  if (block.position.x + colSpan > 4 || block.position.y + rowSpan > 20) {
+    return true; // Out of bounds
+  }
+
+  // Check collision with other blocks and height constraints
+  return checkCollisionWithHeightConstraint(
+    blocks,
+    blockId,
+    block.position.x,
+    block.position.y,
+    newSize
+  );
+};
+
 export const checkCollisionWithSize = (
   blocks: BentoBlock[],
   blockId: string,
@@ -125,4 +156,40 @@ export const checkCollisionWithSize = (
   }
 
   return false;
+};
+
+// Enhanced collision check that includes height constraints
+export const checkCollisionWithHeightConstraint = (
+  blocks: BentoBlock[],
+  blockId: string,
+  newX: number,
+  newY: number,
+  size?: string
+): boolean => {
+  const block = blocks.find(b => b.id === blockId);
+  if (!block) return false;
+
+  const blockSize = size || block.size;
+
+  // First check regular collision
+  if (checkCollisionWithSize(blocks, blockId, newX, newY, size)) {
+    return true;
+  }
+
+  // Then check height constraint compatibility
+  if (!isBlockCompatibleWithRow(blocks, blockSize, newY, blockId)) {
+    return true; // Height constraint violation
+  }
+
+  return false;
+};
+
+// Check if dropping a block would violate height constraints
+export const checkDropHeightConstraint = (
+  blocks: BentoBlock[],
+  blockSize: string,
+  targetX: number,
+  targetY: number
+): boolean => {
+  return !isBlockCompatibleWithRow(blocks, blockSize, targetY);
 };

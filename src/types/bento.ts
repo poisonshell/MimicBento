@@ -19,7 +19,15 @@ export interface BentoBlock {
   type: BentoBlockType;
   title?: string;
   content: Record<string, unknown>;
-  size: 'small' | 'medium' | 'large' | 'wide' | 'tall' | 'section-header';
+  size:
+    | 'small'
+    | 'medium'
+    | 'large'
+    | 'wide'
+    | 'tall'
+    | 'header-full'
+    | 'header-half'
+    | 'section-header';
   position: {
     x: number;
     y: number;
@@ -56,10 +64,19 @@ export interface BlockConfig {
     | 'large'
     | 'wide'
     | 'tall'
-    | 'section-header';
+    | 'header-full'
+    | 'header-half'
+    | 'section-header'; // Legacy support
   /** Available sizes this block supports */
   supportedSizes?: Array<
-    'small' | 'medium' | 'large' | 'wide' | 'tall' | 'section-header'
+    | 'small'
+    | 'medium'
+    | 'large'
+    | 'wide'
+    | 'tall'
+    | 'header-full'
+    | 'header-half'
+    | 'section-header'
   >;
   /** Category for grouping in the add modal */
   category?: string;
