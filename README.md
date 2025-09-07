@@ -80,6 +80,3 @@ NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=your-api-key
 ## 🛠️ Development
 
 See [Block Development Guide](./BLOCK_DEVELOPMENT.md) for creating custom blocks.
-
----
-
