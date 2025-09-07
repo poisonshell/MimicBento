@@ -1,5 +1,10 @@
 import { BentoBlock } from '@/types/bento';
-import { createDragImage, checkCollisionWithHeightConstraint } from '@/utils';
+import {
+  createDragImage,
+  checkCollisionWithHeightConstraint,
+  startAutoScroll,
+  stopAutoScroll,
+} from '@/utils';
 
 export interface DragHandlers {
   handleDragStart: (e: React.DragEvent, blockId: string) => void;
@@ -27,6 +32,7 @@ export const createDragHandlers = (
   ) => void
 ): DragHandlers => {
   const handleDragStart = (e: React.DragEvent, blockId: string) => {
+    console.log('DragHandlers: Drag start', blockId);
     setDragState.setDraggedBlock(blockId);
     e.dataTransfer.effectAllowed = 'move';
     e.dataTransfer.setData('text/plain', blockId);
@@ -35,11 +41,14 @@ export const createDragHandlers = (
     const draggedBlockData = blocks.find(b => b.id === blockId);
 
     createDragImage(dragElement, draggedBlockData, e);
+
+    startAutoScroll();
   };
 
   const handleDragOver = (e: React.DragEvent, x?: number, y?: number) => {
     e.preventDefault();
     e.dataTransfer.dropEffect = 'move';
+
     if (x !== undefined && y !== undefined) {
       setDragState.setDragOverCell({ x, y });
     }
@@ -51,6 +60,9 @@ export const createDragHandlers = (
 
   const handleDrop = (e: React.DragEvent, x: number, y: number) => {
     e.preventDefault();
+
+    stopAutoScroll();
+
     if (dragState.draggedBlock && onBlockPositionChange) {
       const draggedBlockData = blocks.find(
         b => b.id === dragState.draggedBlock
@@ -73,6 +85,8 @@ export const createDragHandlers = (
   };
 
   const handleDragEnd = () => {
+    stopAutoScroll();
+
     // Always clear drag state when drag operation ends, regardless of success
     setDragState.setDraggedBlock(null);
     setDragState.setDragOverCell(null);

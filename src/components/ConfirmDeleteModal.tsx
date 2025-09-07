@@ -29,7 +29,7 @@ export default function ConfirmDeleteModal({
 
   const modalContent = (
     <div
-      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[10000] backdrop-blur-sm"
+      className="fixed inset-0 flex items-center justify-center z-[10000] backdrop-blur-sm"
       onClick={handleBackdropClick}
     >
       <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full mx-4 animate-in zoom-in-95 duration-200">

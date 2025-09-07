@@ -17,6 +17,10 @@ interface GoogleMapsAPI {
     Circle: new (options: CircleOptions) => GoogleCircle;
     Geocoder: new () => GoogleGeocoder;
     OverlayView: new () => GoogleOverlayView;
+    LatLng: new (lat: number, lng: number) => LatLng;
+    event: {
+      trigger: (instance: GoogleMap, eventName: string) => void;
+    };
     SymbolPath: {
       CIRCLE: number;
     };
@@ -122,10 +126,11 @@ declare global {
   }
 }
 
-function MapBlockComponent({ block }: BlockComponentProps) {
+function MapBlockComponent({ block, isMobile }: BlockComponentProps) {
   const { content, title } = block;
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<GoogleMap | null>(null);
+  const resizeObserverRef = useRef<ResizeObserver | null>(null);
 
   // Type-safe content access
   const contentRecord = content as Record<string, unknown>;
@@ -137,6 +142,28 @@ function MapBlockComponent({ block }: BlockComponentProps) {
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
+
+    // Add a small delay to ensure the block is fully rendered
+    const initTimeout = setTimeout(() => {
+      loadGoogleMaps();
+    }, isMobile ? 100 : 50);
+
+    // Set up resize observer for mobile block resizing
+    if (isMobile && mapRef.current && 'ResizeObserver' in window) {
+      resizeObserverRef.current = new ResizeObserver((entries) => {
+        for (const entry of entries) {
+          if (entry.target === mapRef.current && mapInstanceRef.current) {
+            // Trigger map resize and recenter
+            setTimeout(() => {
+              if (window.google && mapInstanceRef.current) {
+                window.google.maps.event.trigger(mapInstanceRef.current, 'resize');
+              }
+            }, 100);
+          }
+        }
+      });
+      resizeObserverRef.current.observe(mapRef.current);
+    }
 
     const loadGoogleMaps = () => {
       if (window.google && window.google.maps) {
@@ -186,7 +213,16 @@ function MapBlockComponent({ block }: BlockComponentProps) {
           if (status === 'OK' && results && results[0] && mapRef.current) {
             const locationResult = results[0].geometry.location;
 
-            // Exact replica of original bento.me map colors
+            // Adjust map center for mobile square format
+            let mapCenter = locationResult;
+            if (isMobile && window.google) {
+              // For mobile square blocks, center the marker more precisely
+              // Since mobile blocks are square (aspect-square), we need minimal offset
+              const lat = locationResult.lat();
+              const lng = locationResult.lng();
+              // Minimal westward offset for square format to leave room for labels
+              mapCenter = new window.google.maps.LatLng(lat, lng - 0.001);
+            }            // Exact replica of original bento.me map colors
             const mapStyles: MapStyle[] = [
               {
                 featureType: 'all',
@@ -293,8 +329,8 @@ function MapBlockComponent({ block }: BlockComponentProps) {
             ];
 
             const mapOptions: GoogleMapOptions = {
-              center: locationResult,
-              zoom: zoom,
+              center: mapCenter,
+              zoom: isMobile ? Math.max(zoom - 1, 8) : zoom, // Slightly zoom out on mobile
               styles: mapStyles,
               disableDefaultUI: true,
               gestureHandling: 'none',
@@ -342,22 +378,24 @@ function MapBlockComponent({ block }: BlockComponentProps) {
                   .gmnoprint div { display: none !important; }
                   .gm-style div[title] { pointer-events: none !important; }
                   
-                  /* Offset city/state labels to avoid overlap with marker */
+                  /* Mobile square format label positioning */
                   .gm-style-pbt {
-                    transform: translateX(40px) translateY(-10px) !important;
+                    transform: ${isMobile ? 'translateX(18px) translateY(-8px)' : 'translateX(40px) translateY(-10px)'} !important;
                   }
                   
                   .gm-style div[style*="z-index: 1"] div[style*="color: rgb(139, 139, 139)"] {
-                    transform: translateX(40px) translateY(-10px) !important;
+                    transform: ${isMobile ? 'translateX(18px) translateY(-8px)' : 'translateX(40px) translateY(-10px)'} !important;
                   }
                   
-                  /* Alternative approach for label positioning */
+                  /* Alternative approach for mobile square label positioning */
                   .gm-style > div > div > div > div[style*="position: absolute"] div[style*="font-size: 11px"] {
-                    transform: translateX(35px) translateY(-8px) !important;
+                    transform: ${isMobile ? 'translateX(15px) translateY(-6px)' : 'translateX(35px) translateY(-8px)'} !important;
+                    font-size: ${isMobile ? '10px' : '11px'} !important;
                   }
                   
                   .gm-style > div > div > div > div[style*="position: absolute"] div[style*="font-size: 12px"] {
-                    transform: translateX(35px) translateY(8px) !important;
+                    transform: ${isMobile ? 'translateX(15px) translateY(6px)' : 'translateX(35px) translateY(8px)'} !important;
+                    font-size: ${isMobile ? '11px' : '12px'} !important;
                   }
                   
                   @keyframes markerPulse {
@@ -481,26 +519,34 @@ function MapBlockComponent({ block }: BlockComponentProps) {
                   }
                 }
 
-                // Create labels with proper offset positioning (only once)
+                // Create labels with mobile square format positioning
                 if (locationName) {
+                  // For mobile square blocks, use compact positioning
+                  const xOffset = isMobile ? 15 : 50; // Compact offset for square
+                  const yOffset = isMobile ? -8 : -10; // Slightly higher for square
+
                   const cityLabel = new LabelOverlay(
                     locationResult,
                     locationName,
-                    50,
-                    -10,
-                    '11px'
+                    xOffset,
+                    yOffset,
+                    '10px' // Smaller font for mobile square
                   );
                   cityLabel.setMap(map);
                   overlays.push(cityLabel);
                 }
 
                 if (stateName) {
+                  // For mobile square blocks, use compact positioning
+                  const xOffset = isMobile ? 15 : 50; // Compact offset for square
+                  const yOffset = isMobile ? 8 : 5; // Slightly lower for square
+
                   const stateLabel = new LabelOverlay(
                     locationResult,
                     stateName,
-                    50,
-                    5,
-                    '12px'
+                    xOffset,
+                    yOffset,
+                    '11px' // Smaller font for mobile square
                   );
                   stateLabel.setMap(map);
                   overlays.push(stateLabel);
@@ -518,43 +564,134 @@ function MapBlockComponent({ block }: BlockComponentProps) {
     const showFallbackMap = () => {
       if (!mapRef.current) return;
 
-      // Show a fallback with nice styling and smaller fonts
-      mapRef.current.innerHTML = `
-        <div class="flex flex-col items-center justify-center h-full text-center p-4 bg-gradient-to-br from-sky-50 via-blue-50 to-indigo-100 text-gray-700 relative overflow-hidden">
-          <div class="absolute inset-0 opacity-10">
-            <div class="absolute top-4 left-4 w-16 h-16 bg-white rounded-full"></div>
-            <div class="absolute top-8 right-8 w-12 h-12 bg-white/60 rounded-full"></div>
-            <div class="absolute bottom-6 left-8 w-20 h-20 bg-white/40 rounded-full"></div>
-          </div>
-          <div class="relative z-10">
-            <div class="mb-2">
-              <svg class="w-8 h-8 text-blue-500 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
-              </svg>
-            </div>
-            <h3 class="font-semibold text-sm mb-1 text-gray-800">${title || location}</h3>
-            ${address ? `<p class="text-xs text-gray-600">${address}</p>` : ''}
-          </div>
-        </div>
-      `;
+      // Create fallback content safely without innerHTML
+      const fallbackContainer = document.createElement('div');
+      fallbackContainer.className = 'flex flex-col items-center justify-center h-full text-center p-4 bg-gradient-to-br from-sky-50 via-blue-50 to-indigo-100 text-gray-700 relative overflow-hidden';
+
+      // Background decorative elements
+      const backgroundDiv = document.createElement('div');
+      backgroundDiv.className = 'absolute inset-0 opacity-10';
+
+      const circle1 = document.createElement('div');
+      circle1.className = 'absolute top-4 left-4 w-16 h-16 bg-white rounded-full';
+
+      const circle2 = document.createElement('div');
+      circle2.className = 'absolute top-8 right-8 w-12 h-12 bg-white/60 rounded-full';
+
+      const circle3 = document.createElement('div');
+      circle3.className = 'absolute bottom-6 left-8 w-20 h-20 bg-white/40 rounded-full';
+
+      backgroundDiv.appendChild(circle1);
+      backgroundDiv.appendChild(circle2);
+      backgroundDiv.appendChild(circle3);
+
+      // Content container
+      const contentDiv = document.createElement('div');
+      contentDiv.className = 'relative z-10';
+
+      // Icon container
+      const iconDiv = document.createElement('div');
+      iconDiv.className = 'mb-2';
+
+      // Create SVG icon
+      const svgIcon = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      svgIcon.setAttribute('class', 'w-8 h-8 text-blue-500 mx-auto');
+      svgIcon.setAttribute('fill', 'none');
+      svgIcon.setAttribute('stroke', 'currentColor');
+      svgIcon.setAttribute('viewBox', '0 0 24 24');
+
+      const path1 = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      path1.setAttribute('stroke-linecap', 'round');
+      path1.setAttribute('stroke-linejoin', 'round');
+      path1.setAttribute('stroke-width', '2');
+      path1.setAttribute('d', 'M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z');
+
+      const path2 = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      path2.setAttribute('stroke-linecap', 'round');
+      path2.setAttribute('stroke-linejoin', 'round');
+      path2.setAttribute('stroke-width', '2');
+      path2.setAttribute('d', 'M15 11a3 3 0 11-6 0 3 3 0 016 0z');
+
+      svgIcon.appendChild(path1);
+      svgIcon.appendChild(path2);
+      iconDiv.appendChild(svgIcon);
+
+      // Title
+      const titleElement = document.createElement('h3');
+      titleElement.className = 'font-semibold text-sm mb-1 text-gray-800';
+      titleElement.textContent = String(title || location);
+
+      // Address (if exists)
+      const addressElement = document.createElement('p');
+      if (address) {
+        addressElement.className = 'text-xs text-gray-600';
+        addressElement.textContent = String(address);
+      }
+
+      // Assemble the content
+      contentDiv.appendChild(iconDiv);
+      contentDiv.appendChild(titleElement);
+      if (address) {
+        contentDiv.appendChild(addressElement);
+      }
+
+      fallbackContainer.appendChild(backgroundDiv);
+      fallbackContainer.appendChild(contentDiv);
+
+      // Clear and append new content
+      mapRef.current.innerHTML = '';
+      mapRef.current.appendChild(fallbackContainer);
     };
 
     if (!location) {
       if (mapRef.current) {
-        mapRef.current.innerHTML = `
-          <div class="flex flex-col items-center justify-center h-full text-center p-4 bg-gradient-to-br from-sky-50 via-blue-50 to-indigo-100 text-gray-700 relative overflow-hidden">
-            <div class="relative z-10">
-              <div class="mb-2">
-                <svg class="w-8 h-8 text-blue-500 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 6 16 0z"/>
-                </svg>
-              </div>
-              <h3 class="font-semibold text-sm mb-1 text-gray-800">Add a location</h3>
-            </div>
-          </div>
-        `;
+        // Create "add location" content safely without innerHTML
+        const emptyStateContainer = document.createElement('div');
+        emptyStateContainer.className = 'flex flex-col items-center justify-center h-full text-center p-4 bg-gradient-to-br from-sky-50 via-blue-50 to-indigo-100 text-gray-700 relative overflow-hidden';
+
+        const contentDiv = document.createElement('div');
+        contentDiv.className = 'relative z-10';
+
+        // Icon container
+        const iconDiv = document.createElement('div');
+        iconDiv.className = 'mb-2';
+
+        // Create SVG icon
+        const svgIcon = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        svgIcon.setAttribute('class', 'w-8 h-8 text-blue-500 mx-auto');
+        svgIcon.setAttribute('fill', 'none');
+        svgIcon.setAttribute('stroke', 'currentColor');
+        svgIcon.setAttribute('viewBox', '0 0 24 24');
+
+        const path1 = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        path1.setAttribute('stroke-linecap', 'round');
+        path1.setAttribute('stroke-linejoin', 'round');
+        path1.setAttribute('stroke-width', '2');
+        path1.setAttribute('d', 'M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z');
+
+        const path2 = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        path2.setAttribute('stroke-linecap', 'round');
+        path2.setAttribute('stroke-linejoin', 'round');
+        path2.setAttribute('stroke-width', '2');
+        path2.setAttribute('d', 'M15 11a3 3 0 11-6 0 3 3 0 016 0z');
+
+        svgIcon.appendChild(path1);
+        svgIcon.appendChild(path2);
+        iconDiv.appendChild(svgIcon);
+
+        // Title
+        const titleElement = document.createElement('h3');
+        titleElement.className = 'font-semibold text-sm mb-1 text-gray-800';
+        titleElement.textContent = 'Add a location';
+
+        // Assemble the content
+        contentDiv.appendChild(iconDiv);
+        contentDiv.appendChild(titleElement);
+        emptyStateContainer.appendChild(contentDiv);
+
+        // Clear and append new content
+        mapRef.current.innerHTML = '';
+        mapRef.current.appendChild(emptyStateContainer);
       }
       return;
     }
@@ -562,6 +699,15 @@ function MapBlockComponent({ block }: BlockComponentProps) {
     loadGoogleMaps();
 
     return () => {
+      // Clear timeout if component unmounts
+      clearTimeout(initTimeout);
+
+      // Clean up resize observer
+      if (resizeObserverRef.current) {
+        resizeObserverRef.current.disconnect();
+        resizeObserverRef.current = null;
+      }
+
       // Cleanup overlays and map
       if (mapInstanceRef.current && mapInstanceRef.current.overlays) {
         // Remove any existing overlays
@@ -574,7 +720,7 @@ function MapBlockComponent({ block }: BlockComponentProps) {
         mapInstanceRef.current = null;
       }
     };
-  }, [location, address, zoom, title]);
+  }, [location, address, zoom, title, isMobile]);
 
   return (
     <div className="w-full h-full relative overflow-hidden bg-gradient-to-br from-sky-100 to-blue-200 rounded-xl">

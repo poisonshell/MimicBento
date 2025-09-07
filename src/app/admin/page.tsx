@@ -8,16 +8,18 @@ import AddBlockModal from '@/components/AddBlockModal';
 import { getPortfolioData, savePortfolioData } from '@/services/portfolio';
 import { useState, useEffect } from 'react';
 import { BentoBlock, BentoData } from '@/types/bento';
-import { notFound } from 'next/navigation';
 import blockRegistry from '@/services/blockRegistry';
 import { AdminPageSkeleton } from '@/components/BlockSkeleton';
 import Link from 'next/link';
+import { useAuth } from '@/hooks/useAuth';
+import { useMobile } from '@/hooks/useMobile';
 
 export default function AdminPage() {
+  const { isAuthenticated, isLoading, isAdminEnabled } = useAuth();
+  const isMobile = useMobile(1024);
   const [portfolioData, setPortfolioData] = useState<BentoData | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
   const [selectedDevice, setSelectedDevice] = useState<'desktop' | 'mobile'>(
     'desktop'
   );
@@ -53,15 +55,22 @@ export default function AdminPage() {
     setToast(prev => ({ ...prev, isVisible: false }));
   };
 
-  useEffect(() => {
-    const isAdminEnabled =
-      process.env.NODE_ENV === 'development' ||
-      process.env.NEXT_PUBLIC_ENABLE_ADMIN === 'true';
-
-    if (!isAdminEnabled) {
-      notFound();
-      return;
+  const handleLogout = async () => {
+    try {
+      await fetch('/api/admin/logout', { method: 'POST' });
+      window.location.href = '/admin/login';
+    } catch (error) {
+      console.error('Logout failed:', error);
+      showToast('Logout failed. Please try again.', 'error');
     }
+  };
+
+  useEffect(() => {
+    // Wait for auth check to complete
+    if (isLoading) return;
+
+    // If admin is disabled or not authenticated, useAuth will handle redirects
+    if (!isAdminEnabled || !isAuthenticated) return;
 
     const initializeApp = async () => {
       try {
@@ -98,16 +107,7 @@ export default function AdminPage() {
     };
 
     initializeApp();
-
-    // Detect mobile screen size
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 1280);
-    };
-
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
+  }, [isLoading, isAdminEnabled, isAuthenticated]);
 
   const handleNameChange = async (name: string) => {
     if (!portfolioData) return;
@@ -323,6 +323,34 @@ export default function AdminPage() {
     }
   };
 
+  // Show auth loading state while checking authentication
+  if (isLoading) {
+    return (
+      <main className="flex min-h-screen flex-col items-center justify-center bg-gray-50">
+        <div className="flex flex-col items-center space-y-4">
+          {/* Loading spinner */}
+          <div className="w-8 h-8 border-3 border-gray-300 border-t-blue-500 rounded-full animate-spin"></div>
+
+          {/* Loading text */}
+          <div className="text-gray-600 text-lg font-medium">
+            Verifying authentication...
+          </div>
+
+          {/* Subtitle */}
+          <div className="text-gray-400 text-sm">
+            Please wait while we check your credentials
+          </div>
+        </div>
+      </main>
+    );
+  }
+
+  // If not authenticated, don't show anything - let useAuth handle redirect
+  if (!isAuthenticated) {
+    return null;
+  }
+
+  // Show admin loading state when authenticated but initializing
   if (loading || !isRegistryReady) {
     return <AdminPageSkeleton />;
   }
@@ -335,7 +363,7 @@ export default function AdminPage() {
             {selectedDevice === 'desktop' ? (
               // Desktop View
               <>
-                <div className="flex h-full w-full max-w-[428px] items-center justify-center p-6 pt-12 pb-0 xl:absolute xl:top-0 xl:max-w-[min(100vw,1728px)] xl:items-stretch xl:justify-start xl:p-16">
+                <div className="flex h-full w-full max-w-[428px] items-center justify-center p-6 pt-12 pb-0 md:max-w-[768px] lg:max-w-[1024px] xl:absolute xl:top-0 xl:max-w-[min(100vw,1728px)] xl:items-stretch xl:justify-start xl:p-16">
                   <div className="flex w-full flex-col px-4 xl:mr-20 xl:flex-1 xl:px-0">
                     <div className="relative xl:sticky xl:top-16">
                       <EditableProfile
@@ -351,13 +379,13 @@ export default function AdminPage() {
                 </div>
 
                 <div
-                  className="flex h-full w-full max-w-[428px] flex-1 flex-col p-6 pt-0 xl:max-w-[1728px] xl:flex-row xl:p-16 overflow-x-hidden"
+                  className="flex h-full w-full max-w-[428px] flex-1 flex-col p-6 pt-0 md:max-w-[768px] lg:max-w-[1024px] xl:max-w-[1728px] xl:flex-row xl:p-16 overflow-x-hidden"
                   data-bento-container="true"
                 >
-                  <div className="mb-10 flex flex-col px-4 xl:mb-0 xl:mr-20 xl:flex-1 xl:px-0"></div>
+                  <div className="mb-10 flex flex-col px-4 lg:mb-0 xl:mb-0 xl:mr-20 xl:flex-1 xl:px-0"></div>
 
                   <div
-                    className="relative flex-1 xl:max-w-[1100px] xl:flex-none min-w-0"
+                    className="relative flex-1 lg:max-w-[900px] lg:mx-auto xl:max-w-[1000px] 2xl:max-w-[1100px] xl:flex-none xl:mx-0 min-w-0"
                     data-grid-dropzone="true"
                   >
                     <BentoGrid
@@ -432,13 +460,20 @@ export default function AdminPage() {
             <button
               onClick={handleSave}
               disabled={saving}
-              className={`cursor-pointer px-3 py-1 rounded-md text-xs font-medium transition-colors ${
-                saving
-                  ? 'bg-gray-400 text-white cursor-not-allowed'
-                  : 'bg-black hover:bg-gray-800 text-white'
-              }`}
+              className={`cursor-pointer px-3 py-1 rounded-md text-xs font-medium transition-colors ${saving
+                ? 'bg-gray-400 text-white cursor-not-allowed'
+                : 'bg-black hover:bg-gray-800 text-white'
+                }`}
             >
               {saving ? 'Saving...' : 'Save'}
+            </button>
+
+            {/* Logout button */}
+            <button
+              onClick={handleLogout}
+              className="cursor-pointer px-3 py-1 rounded-md text-xs font-medium transition-colors bg-red-600 hover:bg-red-700 text-white"
+            >
+              Logout
             </button>
 
             {/* Back button */}
@@ -451,11 +486,10 @@ export default function AdminPage() {
             <div className="bg-black rounded-md p-0.5 flex items-center">
               <button
                 onClick={() => setSelectedDevice('desktop')}
-                className={`w-5 h-5 rounded flex items-center justify-center transition-colors ${
-                  selectedDevice === 'desktop'
-                    ? 'bg-white text-black'
-                    : 'text-gray-400 hover:text-gray-200'
-                }`}
+                className={`w-5 h-5 rounded flex items-center justify-center transition-colors ${selectedDevice === 'desktop'
+                  ? 'bg-white text-black'
+                  : 'text-gray-400 hover:text-gray-200'
+                  }`}
               >
                 <svg
                   className="w-2.5 h-2.5"
@@ -467,11 +501,10 @@ export default function AdminPage() {
               </button>
               <button
                 onClick={() => setSelectedDevice('mobile')}
-                className={`w-5 h-5 rounded flex items-center justify-center transition-colors ${
-                  selectedDevice === 'mobile'
-                    ? 'bg-white text-black'
-                    : 'text-gray-400 hover:text-gray-200'
-                }`}
+                className={`w-5 h-5 rounded flex items-center justify-center transition-colors ${selectedDevice === 'mobile'
+                  ? 'bg-white text-black'
+                  : 'text-gray-400 hover:text-gray-200'
+                  }`}
               >
                 <svg
                   className="w-2.5 h-2.5"

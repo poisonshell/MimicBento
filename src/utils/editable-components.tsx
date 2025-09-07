@@ -1,6 +1,7 @@
 import React from 'react';
 import Image from 'next/image';
 import { createPortal } from 'react-dom';
+import { uploadFile } from '@/services/portfolio';
 
 interface InlineEditFieldProps {
   value: string;
@@ -181,17 +182,9 @@ export const AvatarEditModal: React.FC<AvatarEditModalProps> = ({
     setUploadError('');
 
     try {
-      const formData = new FormData();
-      formData.append('file', file);
+      const result = await uploadFile(file);
 
-      const response = await fetch('/api/portfolio', {
-        method: 'PUT',
-        body: formData,
-      });
-
-      const result = await response.json();
-
-      if (result.success) {
+      if (result.success && result.url) {
         setTempAvatar(result.url);
 
         if (fileInputRef.current) {

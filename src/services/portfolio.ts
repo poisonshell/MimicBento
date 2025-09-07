@@ -1,11 +1,30 @@
 import { BentoData } from '@/types/bento';
 
-// Client-side data fetching (for client components like admin page)
+async function getCSRFToken(): Promise<string | null> {
+  try {
+    const response = await fetch('/api/admin/csrf-token', {
+      method: 'GET',
+      credentials: 'include',
+    });
+
+    if (!response.ok) {
+      console.error('Failed to get CSRF token:', response.status);
+      return null;
+    }
+
+    const data = await response.json();
+    return data.token;
+  } catch (error) {
+    console.error('Error fetching CSRF token:', error);
+    return null;
+  }
+}
+
 export async function getPortfolioData(): Promise<BentoData> {
   try {
     const response = await fetch('/api/portfolio', {
       method: 'GET',
-      cache: 'no-store', // Always fetch fresh data
+      cache: 'no-store',
     });
 
     if (!response.ok) {
@@ -17,7 +36,6 @@ export async function getPortfolioData(): Promise<BentoData> {
   } catch (error) {
     console.error('Error fetching portfolio data:', error);
 
-    // Fallback to default data if API fails
     return {
       profile: {
         name: 'John Doe',
@@ -29,16 +47,22 @@ export async function getPortfolioData(): Promise<BentoData> {
   }
 }
 
-// Save portfolio data to API (admin only)
 export async function savePortfolioData(
   data: BentoData
 ): Promise<{ success: boolean; message?: string; error?: string }> {
   try {
+    const csrfToken = await getCSRFToken();
+    if (!csrfToken) {
+      throw new Error('Failed to obtain CSRF token');
+    }
+
     const response = await fetch('/api/portfolio', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'X-CSRF-Token': csrfToken,
       },
+      credentials: 'include',
       body: JSON.stringify(data),
     });
 
@@ -66,10 +90,8 @@ export async function savePortfolioData(
   }
 }
 
-// Client-side data fetching for static pages
 export async function getPortfolioDataStatic(): Promise<BentoData> {
   try {
-    // For static generation, read directly from the JSON file for better performance
     const response = await fetch(
       `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/data/portfolio.json`
     );
@@ -85,7 +107,6 @@ export async function getPortfolioDataStatic(): Promise<BentoData> {
   } catch (error) {
     console.error('Error fetching static portfolio data:', error);
 
-    // Fallback to default data
     return {
       profile: {
         name: 'John Doe',
@@ -93,6 +114,48 @@ export async function getPortfolioDataStatic(): Promise<BentoData> {
         avatar: 'https://randomuser.me/api/portraits/men/60.jpg',
       },
       blocks: [],
+    };
+  }
+}
+
+export async function uploadFile(
+  file: File
+): Promise<{ success: boolean; url?: string; error?: string }> {
+  try {
+    const csrfToken = await getCSRFToken();
+    if (!csrfToken) {
+      throw new Error('Failed to obtain CSRF token');
+    }
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const response = await fetch('/api/portfolio', {
+      method: 'PUT',
+      headers: {
+        'X-CSRF-Token': csrfToken,
+      },
+      credentials: 'include',
+      body: formData,
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      throw new Error(
+        result.error || `Failed to upload file: ${response.status}`
+      );
+    }
+
+    return {
+      success: true,
+      url: result.url,
+    };
+  } catch (error) {
+    console.error('Error uploading file:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to upload file',
     };
   }
 }

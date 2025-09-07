@@ -32,44 +32,79 @@ export const createDragImage = (
     const content = draggedBlockData?.content;
     const title = draggedBlockData?.title;
 
-    dragImage.innerHTML = `
-      <div style="
-        background: linear-gradient(to bottom right, rgb(224 242 254), rgb(191 219 254));
-        width: 40px;
-        height: 40px;
-        border-radius: 12px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin-bottom: 12px;
-      ">
-        <svg style="width: 24px; height: 24px; color: #3b82f6;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
-        </svg>
-      </div>
-      <div style="
-        font-size: 14px;
-        font-weight: 600;
-        color: #374151;
-        margin-bottom: 4px;
-      ">
-        ${title || content?.location || 'Map'}
-      </div>
-      ${
-        content?.address
-          ? `
-      <div style="
+    // Create icon container
+    const iconContainer = document.createElement('div');
+    iconContainer.style.cssText = `
+      background: linear-gradient(to bottom right, rgb(224 242 254), rgb(191 219 254));
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 12px;
+    `;
+
+    // Create SVG icon
+    const svgIcon = document.createElementNS(
+      'http://www.w3.org/2000/svg',
+      'svg'
+    );
+    svgIcon.setAttribute('style', 'width: 24px; height: 24px; color: #3b82f6;');
+    svgIcon.setAttribute('fill', 'none');
+    svgIcon.setAttribute('stroke', 'currentColor');
+    svgIcon.setAttribute('viewBox', '0 0 24 24');
+
+    const path1 = document.createElementNS(
+      'http://www.w3.org/2000/svg',
+      'path'
+    );
+    path1.setAttribute('stroke-linecap', 'round');
+    path1.setAttribute('stroke-linejoin', 'round');
+    path1.setAttribute('stroke-width', '2');
+    path1.setAttribute(
+      'd',
+      'M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z'
+    );
+
+    const path2 = document.createElementNS(
+      'http://www.w3.org/2000/svg',
+      'path'
+    );
+    path2.setAttribute('stroke-linecap', 'round');
+    path2.setAttribute('stroke-linejoin', 'round');
+    path2.setAttribute('stroke-width', '2');
+    path2.setAttribute('d', 'M15 11a3 3 0 11-6 0 3 3 0 016 0z');
+
+    svgIcon.appendChild(path1);
+    svgIcon.appendChild(path2);
+    iconContainer.appendChild(svgIcon);
+
+    // Create title element
+    const titleElement = document.createElement('div');
+    titleElement.style.cssText = `
+      font-size: 14px;
+      font-weight: 600;
+      color: #374151;
+      margin-bottom: 4px;
+    `;
+    titleElement.textContent = String(title || content?.location || 'Map');
+
+    // Append elements to dragImage
+    dragImage.appendChild(iconContainer);
+    dragImage.appendChild(titleElement);
+
+    // Create address element if address exists
+    if (content?.address) {
+      const addressElement = document.createElement('div');
+      addressElement.style.cssText = `
         font-size: 12px;
         color: #6b7280;
         line-height: 1.4;
-      ">
-        ${content.address}
-      </div>
-      `
-          : ''
-      }
-    `;
+      `;
+      addressElement.textContent = String(content.address);
+      dragImage.appendChild(addressElement);
+    }
   } else {
     // Clone the element to use as drag image for other block types
     dragImage = element.cloneNode(true) as HTMLElement;

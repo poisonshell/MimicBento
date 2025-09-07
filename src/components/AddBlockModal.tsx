@@ -2,6 +2,7 @@
 
 import { createPortal } from 'react-dom';
 import { useState, useRef, useEffect } from 'react';
+import { uploadFile } from '@/services/portfolio';
 import {
   BentoBlockType,
   BentoBlock,
@@ -362,20 +363,13 @@ export default function AddBlockModal({
     setUploadError('');
 
     try {
-      const formData = new FormData();
-      formData.append('file', file);
+      const result = await uploadFile(file);
 
-      const response = await fetch('/api/portfolio', {
-        method: 'PUT',
-        body: formData,
-      });
-
-      if (!response.ok) {
-        throw new Error('Upload failed');
+      if (result.success && result.url) {
+        updateContent('url', result.url);
+      } else {
+        throw new Error(result.error || 'Upload failed');
       }
-
-      const result = await response.json();
-      updateContent('url', result.url);
     } catch (error) {
       console.error('Upload error:', error);
       setUploadError('Failed to upload file. Please try again.');

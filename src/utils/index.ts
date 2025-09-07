@@ -65,3 +65,5 @@ export {
 export { createDragHandlers } from './drag-handlers';
 
 export type { DragHandlers, DragState } from './drag-handlers';
+
+export { startAutoScroll, stopAutoScroll } from './auto-scroll';

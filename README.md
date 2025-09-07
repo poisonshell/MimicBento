@@ -1,104 +1,85 @@
 # MimicBento 🍱
 
-A sleek and customizable portfolio engine inspired by bento.me. This experimental project reimagines the elegant bento box-style layout with a fully flexible block system.
+A sleek and customizable portfolio engine inspired by bento.me. Create beautiful portfolio layouts with a flexible block system and admin interface.
 
 ## ✨ Features
 
-- **🎨 Beautiful Bento Grid Layout** - Elegant portfolio presentation with customizable block sizes
-- **📱 Responsive Design** - Seamless experience on desktop and mobile devices
-- **🔧 Admin Dashboard** - Live editing with drag-and-drop functionality
-- **🧩 Extensible Block System** - 15+ field types, custom validation, and plugin architecture
-- **🎯 Modern UI** - Clean design with React icons and smooth animations
-- **📸 File Upload** - Integrated image upload with preview functionality
-- **🎭 Block Types** - Clock, Social, Photo, Video, Music, Map, Note, Link, and custom blocks
+- **🎨 Bento Grid Layout** - Elegant portfolio with customizable block sizes
+- **📱 Responsive Design** - Works perfectly on desktop and mobile
+- **🔧 Secure Admin Panel** - Protected editing with authentication
+- **🧩 Extensible Blocks** - 10+ block types with plugin architecture
+- **📸 File Upload** - Secure image handling with optimization
 
-## 🚀 Block System
+## 🚀 Quick Start
 
-This project features a **complete extensible block system** that allows others to create custom blocks without modifying core code:
-
-## 📋  Deafult Blocks
-
-- **📝 Note Block** - Text content and memos
-- **🔗 Link Block** - External links with descriptions
-- **📷 Photo Block** - Images with upload functionality
-- **🎥 Video Block** - Video content and embeds
-- **🎵 Music Block** - Music tracks and audio content
-- **🕐 Clock Block** - Live time display with timezone support
-- **🗺️ Map Block** - Location display with address
-- **👤 Social Block** - Social media profile links
-- **📋 Section Header** - Organize content with headers
-
-## 📏 Available Block Sizes
-
-The bento grid system supports multiple block sizes for flexible layouts:
-
-- **`small`** - 1×1 grid cell (175px × 175px) - Perfect for icons, social links, small widgets
-- **`medium`** - 1×2 grid cells (175px × 370px) - Good for photos, longer content
-- **`large`** - 2×2 grid cells (370px × 370px) - Ideal for featured content, large images
-- **`wide`** - 2×1 grid cells (370px × 175px) - Great for links, horizontal content
-- **`tall`** - 1×3 grid cells (175px × 565px) - Perfect for vertical lists, tall images
-- **`section-header`** - Full width header - For organizing content into sections (width 60px)
-
-Default Grid Layout by screensize
-- **`4 x n`** - Desktop 
-- **`2 x n`** - Mobile devices
-
-
-Blocks can be resized in admin mode using the drag handles on photo blocks.
-
-### Creating Custom Blocks
-
-See the [Block Development Guide](./BLOCK_DEVELOPMENT.md) for detailed instructions on creating custom blocks.
-
-
-## 🔒 Admin Security
-
-Currently, we do not have an authorization system in place for the admin panel. To ensure security, the admin panel and all write operations are  **automatically restricted to development environment only**
-
-### Environment Restrictions:
-
-**Admin Access** (`/admin`):
-- ✅ **Development**: Full access (`NODE_ENV === 'development'`)
-- ✅ **Manual Override**: Can be enabled with `NEXT_PUBLIC_ENABLE_ADMIN=true`
-- ❌ **Production**: Automatically returns 404 (not found)
-
-**API Write Operations** (`POST/PUT /api/portfolio`):
-- ✅ **Development**: Full read/write access (`NODE_ENV === 'development'`)
-- ✅ **Manual Override**: Can be enabled with `ENABLE_ADMIN=true`
-- ✅ **Production Read**: `GET /api/portfolio` always works (for viewing)
-- ❌ **Production Write**: Returns 403 Forbidden for POST/PUT operations
-
-This means the site is **production-safe by default** - visitors can view your portfolio, but cannot edit it unless explicitly enabled.
-
-
-## 🛠️ Getting Started
-
-### Prerequisites
-
-- Node.js 18+ 
-- npm, yarn, pnpm, or bun
-
-### Installation
-
-1. Clone the repository:
-```bash
-git clone <repository-url>
-cd mimicbento
-```
-
-2. Install dependencies:
+1. **Install dependencies:**
 ```bash
 npm install
 ```
 
-3. Run the development server:
+2. **Run development server:**
 ```bash
 npm run dev
 ```
 
-4. Open [http://localhost:3000](http://localhost:3000) to see the portfolio
+3. **Visit your portfolio:** [http://localhost:3000](http://localhost:3000)
+4. **Access admin panel:** [http://localhost:3000/admin](http://localhost:3000/admin)
+   
 
-5. Access the admin panel at [http://localhost:3000/admin](http://localhost:3000/admin) to edit content
 
+## 📋 Available Blocks
 
-**Note**: This is an experimental project created for learning and demonstration purposes.
+- **📝 Note** - Text content and memos
+- **🔗 Link** - External links with descriptions  
+- **📷 Photo** - Images with secure upload
+- **🎥 Video** - Video content and embeds
+- **🎵 Music** - Music tracks and audio
+- **🕐 Clock** - Live time with timezone
+- **🗺️ Map** - Location with address
+- **👤 Social** - Social media links
+- **📋 Header** - Section organization
+
+## 🎯 Block Sizes
+
+- **Small** (1×1) - Icons, social links
+- **Medium** (1×2) - Photos, content
+- **Large** (2×2) - Featured content
+- **Wide** (2×1) - Links, horizontal layout
+- **Tall** (1×3) - Lists, vertical content
+
+## 🚀 Production Deployment
+
+**Essential Environment Variables:**
+```bash
+# Required for admin access
+NEXTAUTH_SECRET=your-secret-key
+NEXT_PUBLIC_ENABLE_ADMIN=true
+
+# Admin password
+# Use encoded format due to Next.js parsing issues with $ characters
+ADMIN_PASSWORD_HASH_ENCODED=
+
+# Optional: Google Maps for location blocks
+NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=your-api-key
+```
+
+**Important:** To change the admin password, see `.env.example` for hash generation instructions.
+
+**Security by Default:**
+- Admin panel disabled in production unless explicitly enabled
+- All write operations require authentication
+- Automatic file cleanup and security monitoring
+
+## 🧹 File Management
+
+**Automatic Cleanup Upload:**
+- **Safe Detection:** Files must be BOTH unused (not referenced anywhere) AND old (30+ days)
+- **Background Process:** Runs weekly for maintenance
+- **Manual Control:** Use `GET/POST /api/admin/cleanup` for manual management
+
+## 🛠️ Development
+
+See [Block Development Guide](./BLOCK_DEVELOPMENT.md) for creating custom blocks.
+
+---
+

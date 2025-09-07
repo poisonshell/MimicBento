@@ -2,7 +2,7 @@
   "profile": {
     "name": "John DOO",
     "bio": "hello world !",
-    "avatar": "/uploads/1750747156838-527cf09c8f84dd41015bfc42a9386436.jpg"
+    "avatar": "/uploads/1757272615881-c558270e2c87a066-hand.jpg"
   },
   "blocks": [
     {
@@ -60,19 +60,6 @@
       }
     },
     {
-      "id": "8wH8kksxdHnRs7vg",
-      "type": "note",
-      "title": "\"And on, and off, and on, and off, and on, and off, and on, and off, and on, and off.\" — Neil Hilborn",
-      "size": "tall",
-      "position": {
-        "x": 0,
-        "y": 4
-      },
-      "content": {
-        "text": ""
-      }
-    },
-    {
       "id": "B3Amz1VCa2HM2zpe",
       "type": "photo",
       "title": "KobaFlight",
@@ -112,53 +99,6 @@
       "size": "small",
       "position": {
         "x": 0,
-        "y": 1
-      }
-    },
-    {
-      "id": "block-1750739830311-mn7lt7u2y",
-      "type": "social",
-      "title": "X",
-      "content": {
-        "platform": "x",
-        "url": "@johndoe",
-        "username": "@johndoe",
-        "displayName": "",
-        "description": ""
-      },
-      "size": "small",
-      "position": {
-        "x": 0,
-        "y": 0
-      }
-    },
-    {
-      "id": "block-1750828727007-eoatxxb0u",
-      "type": "clock",
-      "title": "New Block",
-      "content": {
-        "timezone": "auto",
-        "format": "24h"
-      },
-      "size": "medium",
-      "position": {
-        "x": 1,
-        "y": 4
-      }
-    },
-    {
-      "id": "block-1750834543229-30ujmxvr6",
-      "type": "photo",
-      "title": "Ai Art",
-      "content": {
-        "url": "/uploads/1750834547754-7a888fce61553c4b7da03edd361339ed.jpg",
-        "alt": "",
-        "position": "center",
-        "href": ""
-      },
-      "size": "medium",
-      "position": {
-        "x": 3,
         "y": 0
       }
     },
@@ -189,7 +129,7 @@
         "showIcon": false,
         "icon": ""
       },
-      "size": "header-half",
+      "size": "small",
       "position": {
         "x": 0,
         "y": 2
@@ -212,6 +152,20 @@
       "position": {
         "x": 2,
         "y": 2
+      }
+    },
+    {
+      "id": "block-1757236316308-50h5kq633",
+      "type": "clock",
+      "title": "New Block",
+      "content": {
+        "timezone": "auto",
+        "format": "24h"
+      },
+      "size": "small",
+      "position": {
+        "x": 1,
+        "y": 6
       }
     }
   ]

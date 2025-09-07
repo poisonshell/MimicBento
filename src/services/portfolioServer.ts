@@ -2,7 +2,6 @@ import { BentoData } from '@/types/bento';
 import { promises as fs } from 'fs';
 import path from 'path';
 
-// Server-side data fetching (for server components like main page)
 export async function getPortfolioDataServer(): Promise<BentoData> {
   try {
     const dataFilePath = path.join(
