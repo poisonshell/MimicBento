@@ -224,6 +224,7 @@ interface BlockConfig {
 - `'medium'` - 1x2 grid cells
 - `'large'` - 2x2 grid cells
 - `'wide'` - 2x1 grid cells
+- `'extra-wide'` - 4x1 grid cells
 - `'tall'` - 1x3 grid cells
 - `'section-header'` - Full width header
 

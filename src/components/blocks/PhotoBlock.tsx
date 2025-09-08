@@ -26,7 +26,6 @@ function PhotoBlockComponent({ block }: BlockComponentProps) {
     );
   }
 
-  // Get object-position value, default to center
   const objectPosition = position;
 
   const image = (
@@ -191,7 +190,6 @@ function PhotoPreviewComponent({
   );
 }
 
-// Block module export
 export const blockModule: BlockModule = {
   config,
   Component: PhotoBlockComponent,
@@ -200,5 +198,4 @@ export const blockModule: BlockModule = {
   PreviewComponent: PhotoPreviewComponent,
 };
 
-// Export the component for backwards compatibility
 export default PhotoBlockComponent;

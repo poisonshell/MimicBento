@@ -24,7 +24,6 @@ function isAdminAuthenticated(request: NextRequest): boolean {
   }
 }
 
-// GET - Get upload statistics
 export async function GET(request: NextRequest) {
   if (!isAdminEnabled()) {
     return NextResponse.json(
@@ -63,7 +62,6 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// POST - Perform manual cleanup
 export async function POST(request: NextRequest) {
   if (!isAdminEnabled()) {
     return NextResponse.json(

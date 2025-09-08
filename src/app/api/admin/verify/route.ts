@@ -3,7 +3,6 @@ import { verify } from 'jsonwebtoken';
 
 export async function GET(request: NextRequest) {
   try {
-    // Check if admin is enabled
     const isAdminEnabled =
       process.env.NODE_ENV === 'development' ||
       process.env.NEXT_PUBLIC_ENABLE_ADMIN === 'true';
@@ -15,14 +14,12 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Get token from cookies
     const token = request.cookies.get('admin-token')?.value;
 
     if (!token) {
       return NextResponse.json({ error: 'No token provided' }, { status: 401 });
     }
 
-    // Verify JWT token
     try {
       verify(token, process.env.NEXTAUTH_SECRET!);
       return NextResponse.json({ authenticated: true });

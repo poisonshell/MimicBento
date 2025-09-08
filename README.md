@@ -6,6 +6,7 @@ A sleek and customizable portfolio engine inspired by bento.me. Create beautiful
 
 - **🎨 Bento Grid Layout** - Elegant portfolio with customizable block sizes
 - **📱 Responsive Design** - Works perfectly on desktop and mobile
+- **🎬 Smooth Animations** - Framer Motion powered animations with scroll triggers
 - **🔧 Secure Admin Panel** - Protected editing with authentication
 - **🧩 Extensible Blocks** - 10+ block types with plugin architecture
 - **📸 File Upload** - Secure image handling with optimization
@@ -24,7 +25,15 @@ npm run dev
 
 3. **Visit your portfolio:** [http://localhost:3000](http://localhost:3000)
 4. **Access admin panel:** [http://localhost:3000/admin](http://localhost:3000/admin)
-   
+
+## 🎬 Animation System
+
+Control your portfolio's visual experience with built-in animations:
+
+- **Page Transitions** - Fade, slide, or scale between pages
+- **Block Animations** - FadeUp, scaleIn, slideIn, bounce effects
+- **Scroll Triggers** - Blocks animate into view as you scroll
+- **Live Controls** - Adjust timing, easing, and effects in admin panel
 
 
 ## 📋 Available Blocks
@@ -37,7 +46,8 @@ npm run dev
 - **🕐 Clock** - Live time with timezone
 - **🗺️ Map** - Location with address
 - **👤 Social** - Social media links
-- **📋 Header** - Section organization
+- **� Git Activity** - GitHub contribution graphs and stats
+- **�📋 Header** - Section organization
 
 ## 🎯 Block Sizes
 
@@ -45,6 +55,7 @@ npm run dev
 - **Medium** (1×2) - Photos, content
 - **Large** (2×2) - Featured content
 - **Wide** (2×1) - Links, horizontal layout
+- **Extra Wide** (4×1) - Spanning headers, banners
 - **Tall** (1×3) - Lists, vertical content
 
 ## 🚀 Production Deployment

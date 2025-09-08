@@ -8,7 +8,6 @@ import {
 function MusicBlockComponent({ block }: BlockComponentProps) {
   const { content, title } = block;
 
-  // Type-safe content access
   const contentRecord = content as Record<string, unknown>;
   const songTitle =
     typeof contentRecord.title === 'string' ? contentRecord.title : '';
@@ -156,7 +155,6 @@ function MusicPreviewComponent({
   );
 }
 
-// Block module export
 export const blockModule: BlockModule = {
   config,
   Component: MusicBlockComponent,
@@ -165,5 +163,4 @@ export const blockModule: BlockModule = {
   PreviewComponent: MusicPreviewComponent,
 };
 
-// Export the component for backwards compatibility
 export default MusicBlockComponent;

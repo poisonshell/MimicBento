@@ -8,7 +8,6 @@ import {
 function LinkBlockComponent({ block }: BlockComponentProps) {
   const { content } = block;
 
-  // Safe type conversion
   const url = typeof content?.url === 'string' ? content.url : '';
   const title = typeof content?.title === 'string' ? content.title : '';
   const description =
@@ -24,7 +23,6 @@ function LinkBlockComponent({ block }: BlockComponentProps) {
 
   return (
     <div className="flex flex-col justify-between h-full p-4 relative">
-      {/* Main content */}
       <div className="flex flex-col space-y-1">
         <div className="font-medium text-gray-900 text-base">
           {title || 'Link'}
@@ -34,10 +32,8 @@ function LinkBlockComponent({ block }: BlockComponentProps) {
         )}
       </div>
 
-      {/* URL indicator */}
       <div className="text-xs text-gray-400 truncate mt-2">{url}</div>
 
-      {/* Link at bottom - invisible but clickable */}
       <a
         href={url}
         target="_blank"
@@ -142,7 +138,6 @@ function LinkPreviewComponent({
   );
 }
 
-// Block module export
 export const blockModule: BlockModule = {
   config,
   Component: LinkBlockComponent,
@@ -151,5 +146,4 @@ export const blockModule: BlockModule = {
   PreviewComponent: LinkPreviewComponent,
 };
 
-// Export the component for backwards compatibility
 export default LinkBlockComponent;

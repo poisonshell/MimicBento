@@ -27,7 +27,7 @@ export default function SocialIcon({
 
   const iconProps = {
     size: iconSize,
-    className: 'rounded-lg', // Add some rounding to match the design
+    className: 'rounded-lg',
   };
 
   switch (platform.toLowerCase()) {

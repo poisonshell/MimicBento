@@ -165,8 +165,34 @@
       "size": "small",
       "position": {
         "x": 1,
-        "y": 6
+        "y": 5
+      }
+    },
+    {
+      "id": "block-1757356466079-r3oci8qj2",
+      "type": "git-activity",
+      "title": "New Block",
+      "content": {
+        "username": "poisonshell",
+        "githubToken": "https://github.com/poisonshell",
+        "showStats": true,
+        "timeframe": "year"
+      },
+      "size": "wide",
+      "position": {
+        "x": 0,
+        "y": 4
       }
     }
-  ]
+  ],
+  "animations": {
+    "enabled": true,
+    "pageTransition": "scale",
+    "blockStagger": true,
+    "blockAnimation": "scaleIn",
+    "hoverEffects": true,
+    "scrollAnimation": true,
+    "duration": 0.9,
+    "ease": "linear"
+  }
 }

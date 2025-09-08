@@ -351,7 +351,6 @@ function SocialPreviewComponent({
   );
 }
 
-// Block module export
 export const blockModule: BlockModule = {
   config,
   Component: SocialBlockComponent,
@@ -360,5 +359,4 @@ export const blockModule: BlockModule = {
   PreviewComponent: SocialPreviewComponent,
 };
 
-// Export the component for backwards compatibility
 export default SocialBlockComponent;

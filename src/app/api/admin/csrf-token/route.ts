@@ -44,7 +44,6 @@ function getClientIP(request: NextRequest): string {
   return 'localhost';
 }
 
-// GET - Generate new CSRF token
 export async function GET(request: NextRequest) {
   if (!isAdminEnabled()) {
     return NextResponse.json(
@@ -61,10 +60,8 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    // Generate new CSRF token
     const { combined } = createCSRFTokenWithTimestamp();
 
-    // Create response with CSRF token
     const response = NextResponse.json({
       success: true,
       token: combined,
@@ -75,10 +72,8 @@ export async function GET(request: NextRequest) {
       },
     });
 
-    // Set CSRF token as cookie
     response.headers.set('Set-Cookie', createCSRFCookieHeader(combined));
 
-    // Log CSRF token generation
     const clientIP = getClientIP(request);
     logCSRFEvent('token_generated', {
       ip: clientIP,
@@ -90,7 +85,6 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error('Error generating CSRF token:', error);
 
-    // Log failed token generation
     const clientIP = getClientIP(request);
     logCSRFEvent('token_failed', {
       ip: clientIP,

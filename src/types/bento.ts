@@ -24,6 +24,7 @@ export interface BentoBlock {
     | 'medium'
     | 'large'
     | 'wide'
+    | 'extra-wide'
     | 'tall'
     | 'header-full'
     | 'header-half'
@@ -34,6 +35,23 @@ export interface BentoBlock {
   };
 }
 
+export interface AnimationSettings {
+  enabled: boolean;
+  pageTransition: 'fade' | 'slide' | 'scale' | 'none';
+  blockStagger: boolean;
+  blockAnimation:
+    | 'fadeUp'
+    | 'fadeIn'
+    | 'scaleIn'
+    | 'slideIn'
+    | 'bounce'
+    | 'none';
+  hoverEffects: boolean;
+  scrollAnimation: boolean;
+  duration: number; // in seconds
+  ease: 'linear' | 'easeIn' | 'easeOut' | 'easeInOut' | 'spring';
+}
+
 export interface BentoData {
   profile: BentoProfile;
   blocks: BentoBlock[];
@@ -41,6 +59,7 @@ export interface BentoData {
     primaryColor?: string;
     backgroundColor?: string;
   };
+  animations?: AnimationSettings;
 }
 
 // ============ EXTENSIBLE BLOCK SYSTEM ============
@@ -63,6 +82,7 @@ export interface BlockConfig {
     | 'medium'
     | 'large'
     | 'wide'
+    | 'extra-wide'
     | 'tall'
     | 'header-full'
     | 'header-half'
@@ -73,6 +93,7 @@ export interface BlockConfig {
     | 'medium'
     | 'large'
     | 'wide'
+    | 'extra-wide'
     | 'tall'
     | 'header-full'
     | 'header-half'
@@ -98,6 +119,8 @@ export interface BlockConfig {
 export interface BlockComponentProps {
   /** Block data including content */
   block: BentoBlock;
+  /** Profile data for the Bento */
+  profile?: BentoProfile;
   /** Whether in mobile view */
   isMobile?: boolean;
   /** Whether in admin/edit mode */
@@ -336,6 +359,16 @@ export interface SectionHeaderBlockContent {
 }
 
 /**
+ * Content type for git activity blocks
+ */
+export interface GitActivityBlockContent {
+  username: string;
+  githubToken?: string;
+  showStats?: boolean;
+  timeframe?: 'year' | '6months' | '3months';
+}
+
+/**
  * Union type for all block content types
  */
 export type BlockContent =
@@ -348,6 +381,7 @@ export type BlockContent =
   | ClockBlockContent
   | MapBlockContent
   | SectionHeaderBlockContent
+  | GitActivityBlockContent
   | Record<string, unknown>; // For custom/unknown block types
 
 // ============ FORM TYPES ============

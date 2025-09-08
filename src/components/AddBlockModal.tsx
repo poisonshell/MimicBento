@@ -28,9 +28,9 @@ import {
   FiLayout as Layout,
   FiUpload as Upload,
   FiLoader as Loader2,
+  FiActivity as Activity,
 } from 'react-icons/fi';
 
-// Icon mapping for block types
 const getBlockIcon = (
   iconName: string | React.ReactNode,
   fallbackType?: string
@@ -40,7 +40,6 @@ const getBlockIcon = (
   }
 
   const iconMap = {
-    // React Icons Feather names (new)
     FiLink: Link,
     FiFileText: FileText,
     FiImage: Image,
@@ -50,7 +49,8 @@ const getBlockIcon = (
     FiMap: Map,
     FiUsers: Users,
     FiLayout: Layout,
-    // Legacy Lucide names (for backward compatibility)
+    FiActivity: Activity,
+
     Link: Link,
     FileText: FileText,
     Image: Image,
@@ -60,7 +60,7 @@ const getBlockIcon = (
     Map: Map,
     Users: Users,
     Layout: Layout,
-    // Fallback mapping by type
+
     link: Link,
     note: FileText,
     photo: Image,
@@ -79,12 +79,12 @@ const getBlockIcon = (
   );
 };
 
-// Category colors
 const getCategoryColor = (category?: string) => {
   const colorMap = {
     content: 'bg-blue-50 border-blue-200 text-blue-700',
     media: 'bg-purple-50 border-purple-200 text-purple-700',
     social: 'bg-green-50 border-green-200 text-green-700',
+    developer: 'bg-indigo-50 border-indigo-200 text-indigo-700',
     utility: 'bg-orange-50 border-orange-200 text-orange-700',
     layout: 'bg-gray-50 border-gray-200 text-gray-700',
   };
@@ -120,19 +120,16 @@ export default function AddBlockModal({
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    // Initialize block registry and get available blocks with error handling
     const initializeRegistry = async () => {
       try {
         await blockRegistry.initialize();
 
-        // Get all blocks with error recovery
         const allBlockModules = blockRegistry.getAllBlocks();
         const configs = allBlockModules.map(module => module.config);
 
         setAvailableBlocks(configs);
         setIsRegistryReady(true);
 
-        // Run health check and log results
         const health = blockRegistry.healthCheck();
         if (!health.healthy) {
           console.warn(
@@ -141,12 +138,11 @@ export default function AddBlockModal({
           );
         }
 
-        // Log registry status
         const status = blockRegistry.getStatus();
         console.log('📊 Block Registry Status:', status);
       } catch (error) {
         console.error('💥 Failed to initialize block registry:', error);
-        // Still set as ready with empty blocks to prevent infinite loading
+
         setAvailableBlocks([]);
         setIsRegistryReady(true);
       }
@@ -158,15 +154,10 @@ export default function AddBlockModal({
   if (!isOpen) return null;
 
   const handleTypeSelect = (type: BentoBlockType) => {
-    // For social blocks, we'll check for duplicates after platform selection
-    // This allows creating multiple social blocks but prevents duplicate platforms
-
     setSelectedType(type);
 
-    // Generate unique ID
     const newId = `block-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
-    // Get default content from block module or fallback
     let defaultContent = {};
     const blockModule = blockRegistry.getBlock(type);
     if (blockModule?.getDefaultContent) {
@@ -180,7 +171,6 @@ export default function AddBlockModal({
       defaultContent = getDefaultContent(type);
     }
 
-    // Get default size from block config or fallback
     let defaultSize: BentoBlock['size'] = 'small';
     const blockConfig = availableBlocks.find(config => config.type === type);
     if (blockConfig) {
@@ -191,7 +181,6 @@ export default function AddBlockModal({
       defaultSize = 'wide';
     }
 
-    // Auto-populate title for social blocks based on default platform
     let initialTitle = type === 'section-header' ? '' : 'New Block';
     if (type === 'social' && 'platform' in defaultContent) {
       const platformLabels: { [key: string]: string } = {
@@ -216,7 +205,6 @@ export default function AddBlockModal({
       }
     }
 
-    // Initialize block data with defaults
     setBlockData({
       id: newId,
       type,
@@ -260,7 +248,6 @@ export default function AddBlockModal({
     onClose();
   };
 
-  // Fallback for built-in block types that might not be in registry yet
   const getDefaultContent = (blockType: BentoBlockType) => {
     switch (blockType) {
       case 'social':
@@ -302,13 +289,11 @@ export default function AddBlockModal({
         },
       };
 
-      // Auto-populate title for social blocks when platform is selected
       if (
         prev.type === 'social' &&
         field === 'platform' &&
         typeof value === 'string'
       ) {
-        // Check for duplicate platform
         const existingSocialBlocks = allBlocks.filter(
           block => block.type === 'social' && block.id !== prev.id
         );
@@ -328,7 +313,7 @@ export default function AddBlockModal({
           alert(
             `You already have a ${value.charAt(0).toUpperCase() + value.slice(1)} social block.\n\nPlease edit the existing block instead of creating a duplicate.`
           );
-          return prev; // Don't update if duplicate
+          return prev;
         }
 
         const platformLabels: { [key: string]: string } = {
@@ -375,7 +360,7 @@ export default function AddBlockModal({
       setUploadError('Failed to upload file. Please try again.');
     } finally {
       setIsUploading(false);
-      // Reset file input
+
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }
@@ -389,13 +374,11 @@ export default function AddBlockModal({
   const renderConfigureForm = () => {
     if (!selectedType) return null;
 
-    // Check if block is registered in the registry
     const blockModule = blockRegistry.getBlock(selectedType);
     if (blockModule?.configForm) {
       return renderDynamicForm(blockModule.configForm.fields);
     }
 
-    // Default message for unregistered blocks
     return (
       <div className="text-center py-8 text-gray-500">
         <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -419,13 +402,11 @@ export default function AddBlockModal({
           const content = blockData.content as Record<string, unknown>;
           const rawValue = content?.[field.key] ?? field.defaultValue ?? '';
 
-          // Safe type conversion based on field type
           const stringValue =
             typeof rawValue === 'string' ? rawValue : String(rawValue || '');
           const numberValue = typeof rawValue === 'number' ? rawValue : 0;
           const booleanValue = typeof rawValue === 'boolean' ? rawValue : false;
 
-          // Check field dependencies
           if (field.dependencies) {
             const shouldShow = field.dependencies.every(dep => {
               const depValue = content?.[dep.field];
@@ -653,12 +634,12 @@ export default function AddBlockModal({
                     )}
                   </label>
 
-                  {/* Current image preview */}
+                  {}
 
-                  {/* Current image preview */}
+                  {}
                   {stringValue && (
                     <div className="relative">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      {}
                       <img
                         src={stringValue}
                         alt="Preview"
@@ -668,7 +649,7 @@ export default function AddBlockModal({
                     </div>
                   )}
 
-                  {/* Upload section */}
+                  {}
                   <div className="border-2 border-dashed border-gray-300 rounded-xl p-6 hover:border-gray-400 transition-colors">
                     <div className="text-center">
                       <Upload className="mx-auto h-8 w-8 text-gray-400 mb-3" />
@@ -696,7 +677,7 @@ export default function AddBlockModal({
                     </div>
                   </div>
 
-                  {/* Manual URL input */}
+                  {}
                   <FormField
                     label=""
                     value={stringValue}
@@ -718,7 +699,6 @@ export default function AddBlockModal({
                 </div>
               );
             case 'custom':
-              // Allow extensions to provide custom components
               if (field.CustomComponent) {
                 return (
                   <div key={field.key}>
@@ -771,7 +751,6 @@ export default function AddBlockModal({
       );
     }
 
-    // Group blocks by category
     const blocksByCategory = availableBlocks.reduce(
       (acc, block) => {
         const category = block.category || 'other';
@@ -786,6 +765,7 @@ export default function AddBlockModal({
       'content',
       'media',
       'social',
+      'developer',
       'utility',
       'layout',
       'other',
@@ -859,7 +839,7 @@ export default function AddBlockModal({
       <div className="absolute inset-0" onClick={handleClose} />
       <div className="relative bg-white rounded-2xl shadow-2xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-hidden">
         <div className="flex flex-col h-full max-h-[90vh]">
-          {/* Header */}
+          {}
           <div className="flex items-center justify-between p-6 border-b border-gray-200 bg-white">
             <div className="flex items-center space-x-3">
               {step === 'configure' && (
@@ -892,12 +872,12 @@ export default function AddBlockModal({
             </button>
           </div>
 
-          {/* Content */}
+          {}
           <div className="flex-1 overflow-y-auto p-6">
             {step === 'select' ? renderSelectStep() : renderConfigureForm()}
           </div>
 
-          {/* Footer */}
+          {}
           <div className="p-6 border-t border-gray-200 bg-gray-50">
             {step === 'select' ? (
               <button
@@ -927,7 +907,7 @@ export default function AddBlockModal({
         </div>
       </div>
 
-      {/* Hidden file input for photo uploads */}
+      {}
       <input
         ref={fileInputRef}
         type="file"

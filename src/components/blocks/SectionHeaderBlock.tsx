@@ -6,7 +6,6 @@ import {
   BlockConfigForm,
 } from '@/types/bento';
 
-// Section Header Block Component
 function SectionHeaderBlockComponent({ block }: BlockComponentProps) {
   const { content, title } = block;
 
@@ -35,10 +34,8 @@ function SectionHeaderBlockComponent({ block }: BlockComponentProps) {
     'orange-600': 'text-orange-600',
   };
 
-  // Type-safe content access
   const contentRecord = content as Record<string, unknown>;
 
-  // Support both new and legacy field names for backward compatibility
   const textSize =
     typeof contentRecord.textSize === 'string' ? contentRecord.textSize : '';
   const legacySize =
@@ -84,7 +81,7 @@ function SectionHeaderBlockComponent({ block }: BlockComponentProps) {
   );
 }
 
-// Block configuration - Updated to use new header sizes
+// Block configuration
 const config: BlockConfig = {
   type: 'section-header',
   name: 'Section Header',
@@ -207,7 +204,6 @@ const PreviewComponent: React.FC<{ content: Record<string, unknown> }> = ({
   );
 };
 
-// Block module export
 export const blockModule: BlockModule = {
   config,
   Component: SectionHeaderBlockComponent,
@@ -216,5 +212,4 @@ export const blockModule: BlockModule = {
   PreviewComponent,
 };
 
-// Default export for backward compatibility
 export default SectionHeaderBlockComponent;

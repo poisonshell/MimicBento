@@ -8,7 +8,6 @@ import {
 function NoteBlockComponent({ block }: BlockComponentProps) {
   const { content, title } = block;
 
-  // Type-safe content access
   const contentRecord = content as Record<string, unknown>;
   const text = typeof contentRecord.text === 'string' ? contentRecord.text : '';
 
@@ -93,7 +92,6 @@ function NotePreviewComponent({
   );
 }
 
-// Block module export
 export const blockModule: BlockModule = {
   config,
   Component: NoteBlockComponent,
@@ -102,5 +100,4 @@ export const blockModule: BlockModule = {
   PreviewComponent: NotePreviewComponent,
 };
 
-// Export the component for backwards compatibility
 export default NoteBlockComponent;

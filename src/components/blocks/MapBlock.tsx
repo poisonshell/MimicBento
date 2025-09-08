@@ -144,19 +144,25 @@ function MapBlockComponent({ block, isMobile }: BlockComponentProps) {
     if (typeof window === 'undefined') return;
 
     // Add a small delay to ensure the block is fully rendered
-    const initTimeout = setTimeout(() => {
-      loadGoogleMaps();
-    }, isMobile ? 100 : 50);
+    const initTimeout = setTimeout(
+      () => {
+        loadGoogleMaps();
+      },
+      isMobile ? 100 : 50
+    );
 
     // Set up resize observer for mobile block resizing
     if (isMobile && mapRef.current && 'ResizeObserver' in window) {
-      resizeObserverRef.current = new ResizeObserver((entries) => {
+      resizeObserverRef.current = new ResizeObserver(entries => {
         for (const entry of entries) {
           if (entry.target === mapRef.current && mapInstanceRef.current) {
             // Trigger map resize and recenter
             setTimeout(() => {
               if (window.google && mapInstanceRef.current) {
-                window.google.maps.event.trigger(mapInstanceRef.current, 'resize');
+                window.google.maps.event.trigger(
+                  mapInstanceRef.current,
+                  'resize'
+                );
               }
             }, 100);
           }
@@ -222,7 +228,7 @@ function MapBlockComponent({ block, isMobile }: BlockComponentProps) {
               const lng = locationResult.lng();
               // Minimal westward offset for square format to leave room for labels
               mapCenter = new window.google.maps.LatLng(lat, lng - 0.001);
-            }            // Exact replica of original bento.me map colors
+            } // Exact replica of original bento.me map colors
             const mapStyles: MapStyle[] = [
               {
                 featureType: 'all',
@@ -566,20 +572,24 @@ function MapBlockComponent({ block, isMobile }: BlockComponentProps) {
 
       // Create fallback content safely without innerHTML
       const fallbackContainer = document.createElement('div');
-      fallbackContainer.className = 'flex flex-col items-center justify-center h-full text-center p-4 bg-gradient-to-br from-sky-50 via-blue-50 to-indigo-100 text-gray-700 relative overflow-hidden';
+      fallbackContainer.className =
+        'flex flex-col items-center justify-center h-full text-center p-4 bg-gradient-to-br from-sky-50 via-blue-50 to-indigo-100 text-gray-700 relative overflow-hidden';
 
       // Background decorative elements
       const backgroundDiv = document.createElement('div');
       backgroundDiv.className = 'absolute inset-0 opacity-10';
 
       const circle1 = document.createElement('div');
-      circle1.className = 'absolute top-4 left-4 w-16 h-16 bg-white rounded-full';
+      circle1.className =
+        'absolute top-4 left-4 w-16 h-16 bg-white rounded-full';
 
       const circle2 = document.createElement('div');
-      circle2.className = 'absolute top-8 right-8 w-12 h-12 bg-white/60 rounded-full';
+      circle2.className =
+        'absolute top-8 right-8 w-12 h-12 bg-white/60 rounded-full';
 
       const circle3 = document.createElement('div');
-      circle3.className = 'absolute bottom-6 left-8 w-20 h-20 bg-white/40 rounded-full';
+      circle3.className =
+        'absolute bottom-6 left-8 w-20 h-20 bg-white/40 rounded-full';
 
       backgroundDiv.appendChild(circle1);
       backgroundDiv.appendChild(circle2);
@@ -594,19 +604,31 @@ function MapBlockComponent({ block, isMobile }: BlockComponentProps) {
       iconDiv.className = 'mb-2';
 
       // Create SVG icon
-      const svgIcon = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      const svgIcon = document.createElementNS(
+        'http://www.w3.org/2000/svg',
+        'svg'
+      );
       svgIcon.setAttribute('class', 'w-8 h-8 text-blue-500 mx-auto');
       svgIcon.setAttribute('fill', 'none');
       svgIcon.setAttribute('stroke', 'currentColor');
       svgIcon.setAttribute('viewBox', '0 0 24 24');
 
-      const path1 = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      const path1 = document.createElementNS(
+        'http://www.w3.org/2000/svg',
+        'path'
+      );
       path1.setAttribute('stroke-linecap', 'round');
       path1.setAttribute('stroke-linejoin', 'round');
       path1.setAttribute('stroke-width', '2');
-      path1.setAttribute('d', 'M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z');
+      path1.setAttribute(
+        'd',
+        'M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z'
+      );
 
-      const path2 = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      const path2 = document.createElementNS(
+        'http://www.w3.org/2000/svg',
+        'path'
+      );
       path2.setAttribute('stroke-linecap', 'round');
       path2.setAttribute('stroke-linejoin', 'round');
       path2.setAttribute('stroke-width', '2');
@@ -647,7 +669,8 @@ function MapBlockComponent({ block, isMobile }: BlockComponentProps) {
       if (mapRef.current) {
         // Create "add location" content safely without innerHTML
         const emptyStateContainer = document.createElement('div');
-        emptyStateContainer.className = 'flex flex-col items-center justify-center h-full text-center p-4 bg-gradient-to-br from-sky-50 via-blue-50 to-indigo-100 text-gray-700 relative overflow-hidden';
+        emptyStateContainer.className =
+          'flex flex-col items-center justify-center h-full text-center p-4 bg-gradient-to-br from-sky-50 via-blue-50 to-indigo-100 text-gray-700 relative overflow-hidden';
 
         const contentDiv = document.createElement('div');
         contentDiv.className = 'relative z-10';
@@ -657,19 +680,31 @@ function MapBlockComponent({ block, isMobile }: BlockComponentProps) {
         iconDiv.className = 'mb-2';
 
         // Create SVG icon
-        const svgIcon = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        const svgIcon = document.createElementNS(
+          'http://www.w3.org/2000/svg',
+          'svg'
+        );
         svgIcon.setAttribute('class', 'w-8 h-8 text-blue-500 mx-auto');
         svgIcon.setAttribute('fill', 'none');
         svgIcon.setAttribute('stroke', 'currentColor');
         svgIcon.setAttribute('viewBox', '0 0 24 24');
 
-        const path1 = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        const path1 = document.createElementNS(
+          'http://www.w3.org/2000/svg',
+          'path'
+        );
         path1.setAttribute('stroke-linecap', 'round');
         path1.setAttribute('stroke-linejoin', 'round');
         path1.setAttribute('stroke-width', '2');
-        path1.setAttribute('d', 'M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z');
+        path1.setAttribute(
+          'd',
+          'M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z'
+        );
 
-        const path2 = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        const path2 = document.createElementNS(
+          'http://www.w3.org/2000/svg',
+          'path'
+        );
         path2.setAttribute('stroke-linecap', 'round');
         path2.setAttribute('stroke-linejoin', 'round');
         path2.setAttribute('stroke-width', '2');
@@ -936,7 +971,6 @@ function MapPreviewComponent({
   );
 }
 
-// Block module export
 export const blockModule: BlockModule = {
   config,
   Component: MapBlockComponent,
@@ -945,5 +979,4 @@ export const blockModule: BlockModule = {
   PreviewComponent: MapPreviewComponent,
 };
 
-// Export the component for backwards compatibility
 export default MapBlockComponent;

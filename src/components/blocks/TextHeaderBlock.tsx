@@ -259,7 +259,6 @@ const PreviewComponent: React.FC<{ content: Record<string, unknown> }> = ({
   );
 };
 
-// Block module export
 export const blockModule: BlockModule = {
   config,
   Component: TextHeaderBlockComponent,
@@ -268,5 +267,4 @@ export const blockModule: BlockModule = {
   PreviewComponent,
 };
 
-// Default export for backward compatibility
 export default TextHeaderBlockComponent;

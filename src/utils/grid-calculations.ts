@@ -15,6 +15,8 @@ export const getSizeClasses = (size: string, isMobile: boolean = false) => {
       return 'col-span-2 row-span-2';
     case 'wide':
       return 'col-span-2 row-span-1';
+    case 'extra-wide':
+      return 'col-span-4 row-span-1';
     case 'tall':
       return 'col-span-1 row-span-3';
     case 'header-full':
@@ -41,6 +43,10 @@ export const getBlockDimensions = (size: string) => {
       break;
     case 'header-half':
       colSpan = 2;
+      rowSpan = 1;
+      break;
+    case 'extra-wide':
+      colSpan = 4;
       rowSpan = 1;
       break;
     case 'wide':
@@ -132,9 +138,11 @@ export const getValidDropPositions = (
     }
 
     for (let col = 0; col < 4; col++) {
-      // For full-width headers, only allow dropping at x=0
+      // For full-width headers and extra-wide blocks, only allow dropping at x=0
       if (
-        (blockSize === 'header-full' || blockSize === 'section-header') &&
+        (blockSize === 'header-full' ||
+          blockSize === 'section-header' ||
+          blockSize === 'extra-wide') &&
         col !== 0
       ) {
         continue;
@@ -203,6 +211,11 @@ export const getNextSize = (
     wide: {
       left: 'small', // 2x1 → 1x1
       down: 'large', // 2x1 → 2x2
+      right: 'extra-wide', // 2x1 → 4x1
+    },
+    'extra-wide': {
+      left: 'wide', // 4x1 → 2x1
+      down: 'large', // 4x1 → 2x2 (best fit)
     },
     large: {
       left: 'medium', // 2x2 → 1x2
@@ -253,7 +266,8 @@ export const getAvailableSizes = (
     const sizeMap = {
       small: ['medium', 'wide', 'large'],
       medium: ['small', 'large', 'tall'],
-      wide: ['small', 'large'],
+      wide: ['small', 'large', 'extra-wide'],
+      'extra-wide': ['wide', 'large'],
       large: ['small', 'medium', 'wide'],
       tall: ['medium', 'large'],
       'header-half': ['header-full'],
@@ -284,6 +298,12 @@ export const getSizeInfo = (size: string) => {
     small: { cols: 1, rows: 1, label: 'Small (1×1)', height: '175px' },
     medium: { cols: 1, rows: 2, label: 'Medium (1×2)', height: '175px' },
     wide: { cols: 2, rows: 1, label: 'Wide (2×1)', height: '175px' },
+    'extra-wide': {
+      cols: 4,
+      rows: 1,
+      label: 'Extra Wide (4×1)',
+      height: '175px',
+    },
     large: { cols: 2, rows: 2, label: 'Large (2×2)', height: '175px' },
     tall: { cols: 1, rows: 3, label: 'Tall (1×3)', height: '175px' },
     'header-full': {

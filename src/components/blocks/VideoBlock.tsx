@@ -10,23 +10,20 @@ import { useState } from 'react';
 
 // Utility functions for video thumbnails
 function getYouTubeVideoId(url: string): string | null {
-  // More comprehensive YouTube URL patterns
   const patterns = [
     /(?:youtube\.com\/watch\?v=)([^&\n?#]+)/,
     /(?:youtube\.com\/embed\/)([^&\n?#]+)/,
     /(?:youtube\.com\/v\/)([^&\n?#]+)/,
     /(?:youtu\.be\/)([^&\n?#]+)/,
-    /(?:youtube\.com\/watch\?.*&v=)([^&\n?#]+)/
+    /(?:youtube\.com\/watch\?.*&v=)([^&\n?#]+)/,
   ];
 
   for (const pattern of patterns) {
     const match = url.match(pattern);
     if (match && match[1] && match[1].length === 11) {
-
       return match[1];
     }
   }
-
 
   return null;
 }
@@ -39,12 +36,11 @@ function getVimeoVideoId(url: string): string | null {
 
 function getYouTubeThumbnails(videoId: string): string[] {
   const thumbnails = [
-    `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`,    // High quality (480x360) - most reliable
-    `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`,    // Medium quality (320x180)
+    `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`, // High quality (480x360) - most reliable
+    `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`, // Medium quality (320x180)
     `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`, // Max quality (1280x720) - not always available
-    `https://img.youtube.com/vi/${videoId}/default.jpg`       // Default quality (120x90)
+    `https://img.youtube.com/vi/${videoId}/default.jpg`, // Default quality (120x90)
   ];
-
 
   return thumbnails;
 }
@@ -68,7 +64,6 @@ function VideoBlockComponent({ block }: BlockComponentProps) {
   const [imageError, setImageError] = useState(false);
   const [currentThumbnailIndex, setCurrentThumbnailIndex] = useState(0);
 
-  // Type-safe content access
   const contentRecord = content as Record<string, unknown>;
   const videoTitle =
     typeof contentRecord.title === 'string' ? contentRecord.title : '';
@@ -96,33 +91,27 @@ function VideoBlockComponent({ block }: BlockComponentProps) {
 
   const thumbnailUrls = getVideoThumbnail(url, platform);
   const currentThumbnailUrl = thumbnailUrls[currentThumbnailIndex];
-  const showThumbnail = currentThumbnailUrl && !imageError && thumbnailUrls.length > 0;
-
-
+  const showThumbnail =
+    currentThumbnailUrl && !imageError && thumbnailUrls.length > 0;
 
   const handleImageError = () => {
-    // Try next thumbnail quality if available
     if (currentThumbnailIndex < thumbnailUrls.length - 1) {
       setCurrentThumbnailIndex(prev => prev + 1);
     } else {
-      // No more thumbnails to try
       setImageError(true);
     }
   };
 
   return (
     <div
-      className={`flex flex-col h-full ${url ? 'cursor-pointer hover:bg-gray-50 transition-colors' : ''
-        } overflow-hidden rounded-lg`}
+      className={`flex flex-col h-full ${
+        url ? 'cursor-pointer hover:bg-gray-50 transition-colors' : ''
+      } overflow-hidden rounded-lg`}
       onClick={handleClick}
     >
-
-
       {/* Thumbnail area */}
       {showThumbnail ? (
-
         <div className="relative flex-1 min-h-0">
-
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={currentThumbnailUrl}
@@ -133,7 +122,12 @@ function VideoBlockComponent({ block }: BlockComponentProps) {
           {/* Play button overlay */}
           <div className="absolute inset-0 flex items-center justify-center bg-transparent hover:bg-black hover:bg-opacity-20 transition-all pointer-events-none">
             <div className="w-8 h-8 bg-red-600 bg-opacity-80 rounded-full flex items-center justify-center text-white shadow-md pointer-events-auto opacity-80 hover:opacity-100 transition-opacity">
-              <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor">
+              <svg
+                width="10"
+                height="10"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+              >
                 <path d="M8 5v14l11-7z" />
               </svg>
             </div>
@@ -142,14 +136,20 @@ function VideoBlockComponent({ block }: BlockComponentProps) {
       ) : (
         /* Fallback content area */
         <div className="flex-1 flex items-center justify-center bg-gray-100 min-h-0">
-
           <div className="text-center p-4">
             <div className="w-12 h-12 bg-gray-300 rounded-full flex items-center justify-center text-gray-600 mx-auto mb-2">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+              >
                 <path d="M8 5v14l11-7z" />
               </svg>
             </div>
-            <div className="text-sm text-gray-600 capitalize">{platform || 'video'}</div>
+            <div className="text-sm text-gray-600 capitalize">
+              {platform || 'video'}
+            </div>
           </div>
         </div>
       )}
@@ -168,11 +168,7 @@ function VideoBlockComponent({ block }: BlockComponentProps) {
           {platform && (
             <div className="text-gray-400 text-xs capitalize">{platform}</div>
           )}
-          {url && (
-            <div className="text-xs text-blue-600">
-              Watch →
-            </div>
-          )}
+          {url && <div className="text-xs text-blue-600">Watch →</div>}
         </div>
       </div>
     </div>
@@ -283,7 +279,8 @@ function VideoPreviewComponent({
 
   const thumbnailUrls = getVideoThumbnail(url, platform);
   const currentThumbnailUrl = thumbnailUrls[previewThumbnailIndex];
-  const showThumbnail = currentThumbnailUrl && !previewImageError && thumbnailUrls.length > 0;
+  const showThumbnail =
+    currentThumbnailUrl && !previewImageError && thumbnailUrls.length > 0;
 
   const handlePreviewImageError = () => {
     if (previewThumbnailIndex < thumbnailUrls.length - 1) {
@@ -306,7 +303,12 @@ function VideoPreviewComponent({
           />
           <div className="absolute inset-0 flex items-center justify-center">
             <div className="w-8 h-8 bg-red-600 rounded-full flex items-center justify-center text-white">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+              <svg
+                width="12"
+                height="12"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+              >
                 <path d="M8 5v14l11-7z" />
               </svg>
             </div>
@@ -316,7 +318,12 @@ function VideoPreviewComponent({
         <div className="aspect-video bg-gray-100 flex items-center justify-center">
           <div className="text-center">
             <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center text-gray-600 mx-auto mb-1">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+              >
                 <path d="M8 5v14l11-7z" />
               </svg>
             </div>
@@ -334,7 +341,6 @@ function VideoPreviewComponent({
   );
 }
 
-// Block module export
 export const blockModule: BlockModule = {
   config,
   Component: VideoBlockComponent,

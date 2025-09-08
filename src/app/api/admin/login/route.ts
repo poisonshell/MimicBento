@@ -2,14 +2,12 @@ import { NextRequest, NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 
-// Decode the hash from environment variable (workaround for $ character issues)
 function getPasswordHash(): string {
   const encoded = process.env.ADMIN_PASSWORD_HASH_ENCODED;
   if (encoded) {
-    // Convert 2b__12__... back to $2b$12$...
     return '$' + encoded.replace(/__/g, '$');
   }
-  // Fallback to default hash for "password"
+
   return '$2b$12$WC8Q.MnCnPLGGj9AvYlNo.458uKsc8GSqc5eNz.y06RNZ1XSy6wlS';
 }
 
@@ -23,7 +21,6 @@ function isAdminEnabled(): boolean {
 }
 
 export async function POST(request: NextRequest) {
-  // Check if admin panel is enabled
   if (!isAdminEnabled()) {
     return NextResponse.json(
       { error: 'Admin panel is disabled' },
@@ -64,7 +61,6 @@ export async function POST(request: NextRequest) {
     console.log('✅ Password validation result:', isValid);
 
     if (!isValid) {
-      // Log failed attempt (for security monitoring)
       const clientIP = request.headers.get('x-forwarded-for') || 'unknown';
       console.warn(
         `❌ Failed admin login attempt from ${clientIP} at ${new Date().toISOString()}`
@@ -76,7 +72,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Log successful login
     const clientIP = request.headers.get('x-forwarded-for') || 'unknown';
     console.log(
       `✅ Successful admin login from ${clientIP} at ${new Date().toISOString()}`
@@ -94,7 +89,7 @@ export async function POST(request: NextRequest) {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'strict',
-      maxAge: 24 * 60 * 60, // 24 hours
+      maxAge: 24 * 60 * 60,
     });
 
     return response;

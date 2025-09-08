@@ -11,6 +11,7 @@ export default async function Home() {
     avatar: undefined,
   };
   const blocks = portfolioData?.blocks || [];
+  const animations = portfolioData?.animations;
 
-  return <HomePage initialData={{ profile, blocks }} />;
+  return <HomePage initialData={{ profile, blocks, animations }} />;
 }

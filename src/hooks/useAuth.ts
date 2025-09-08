@@ -20,7 +20,6 @@ export function useAuth() {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        // First check if admin is enabled
         const isAdminEnabled =
           process.env.NODE_ENV === 'development' ||
           process.env.NEXT_PUBLIC_ENABLE_ADMIN === 'true';
@@ -35,7 +34,6 @@ export function useAuth() {
           return;
         }
 
-        // Check authentication by calling a protected endpoint
         const response = await fetch('/api/admin/verify', {
           method: 'GET',
           credentials: 'include',

@@ -10,7 +10,7 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: 'MimicBento ',
-  description: 'boxy portfolio',
+  description: 'MimicBento - Portfolio Engine',
   icons: {
     icon: [
       { url: '/favicon-16x16.png', sizes: '16x16', type: 'image/png' },

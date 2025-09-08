@@ -20,6 +20,7 @@
     "bcryptjs": "^3.0.2",
     "dompurify": "^3.2.6",
     "file-type": "^21.0.0",
+    "framer-motion": "^12.23.12",
     "jsonwebtoken": "^9.0.2",
     "mime-types": "^3.0.1",
     "next": "^15.5.2",

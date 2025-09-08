@@ -1,4 +1,4 @@
-import { BentoBlock } from '@/types/bento';
+import { BentoBlock, BentoProfile } from '@/types/bento';
 import blockRegistry from '@/services/blockRegistry';
 import ConfirmDeleteModal from './ConfirmDeleteModal';
 import { getSizeClasses } from '@/utils';
@@ -7,6 +7,7 @@ import BlockSkeleton from './BlockSkeleton';
 
 interface BentoBlockProps {
   block: BentoBlock;
+  profile?: BentoProfile;
   isMobile?: boolean;
   isAdmin?: boolean;
   onEdit?: (block: BentoBlock) => void;
@@ -15,6 +16,7 @@ interface BentoBlockProps {
 
 export default function BentoBlockComponent({
   block,
+  profile,
   isMobile = false,
   isAdmin = false,
   onEdit,
@@ -52,6 +54,8 @@ export default function BentoBlockComponent({
         return 'clock';
       case 'map':
         return 'map';
+      case 'git-activity':
+        return 'default';
       default:
         return 'default';
     }
@@ -62,7 +66,7 @@ export default function BentoBlockComponent({
     if (!isRegistryReady) {
       return (
         <BlockSkeleton
-          type={block.size}
+          type={block.size === 'extra-wide' ? 'wide' : block.size}
           variant={getSkeletonVariant(block.type)}
         />
       );
@@ -87,6 +91,7 @@ export default function BentoBlockComponent({
     return (
       <Component
         block={block}
+        profile={profile}
         isMobile={isMobile}
         isAdmin={isAdmin}
         onEdit={onEdit}
@@ -142,7 +147,7 @@ export default function BentoBlockComponent({
 
   return (
     <div
-      className={`h-full rounded-xl overflow-hidden transition-all duration-300 ease-out ${
+      className={`h-full rounded-xl transition-all duration-300 ease-out ${
         isSection
           ? 'bg-transparent border-0'
           : 'bg-white border border-gray-200'
@@ -150,7 +155,11 @@ export default function BentoBlockComponent({
         isMobile
           ? 'hover:scale-[1.02] hover:shadow-lg hover:z-10 transform cursor-pointer'
           : `${getSizeClasses(block.size, isMobile)} ${interactiveClasses}`
-      } ${isAdmin ? 'group relative' : ''} ${isDeleting ? 'pointer-events-none opacity-50' : ''}`}
+      } ${isAdmin ? 'group relative' : ''} ${isDeleting ? 'pointer-events-none opacity-50' : ''} ${
+        block.type === 'git-activity'
+          ? 'overflow-x-auto overflow-y-hidden'
+          : 'overflow-hidden'
+      }`}
       onClick={handleClick}
     >
       {renderBlockContent()}

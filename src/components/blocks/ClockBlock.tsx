@@ -8,7 +8,6 @@ function ClockBlockComponent() {
   const [timeZone, setTimeZone] = useState('');
 
   useEffect(() => {
-    // Set initial time on client-side mount
     setTime(new Date());
 
     const timerId = setInterval(() => {
@@ -43,7 +42,6 @@ function ClockBlockComponent() {
   );
 }
 
-// Block configuration
 const config: BlockConfig = {
   type: 'clock',
   name: 'Clock',
@@ -58,7 +56,6 @@ const config: BlockConfig = {
   },
 };
 
-// Configuration form (minimal for clock)
 const configForm: BlockConfigForm = {
   fields: [
     {
@@ -92,13 +89,11 @@ const configForm: BlockConfigForm = {
   ],
 };
 
-// Default content when creating a new clock block
 const getDefaultContent = () => ({
   timezone: 'auto',
   format: '24h',
 });
 
-// Block module export
 export const blockModule: BlockModule = {
   config,
   Component: ClockBlockComponent,
@@ -106,5 +101,4 @@ export const blockModule: BlockModule = {
   getDefaultContent,
 };
 
-// Export the component for backwards compatibility
 export default ClockBlockComponent;
