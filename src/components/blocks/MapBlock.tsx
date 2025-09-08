@@ -197,7 +197,7 @@ function MapBlockComponent({ block, isMobile }: BlockComponentProps) {
       }
 
       const script = document.createElement('script');
-      script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places`;
+      script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places&loading=async`;
       script.async = true;
       script.defer = true;
       script.onload = initializeMap;
@@ -205,7 +205,13 @@ function MapBlockComponent({ block, isMobile }: BlockComponentProps) {
     };
 
     const initializeMap = () => {
-      if (!mapRef.current || !window.google) return;
+      // Check if Google Maps API is fully loaded
+      if (!mapRef.current || !window.google || !window.google.maps || !window.google.maps.Geocoder) {
+        // API not ready yet, retry after a short delay
+        setTimeout(initializeMap, 100);
+        return;
+      }
+
       // Prevent duplicate initialization
       if (mapInstanceRef.current) return;
 

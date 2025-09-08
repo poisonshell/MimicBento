@@ -34,11 +34,15 @@ class BentoBlockRegistry implements BlockRegistry {
         return;
       }
 
-      // Check for duplicate registration
+      // Check for duplicate registration - only warn in development
       if (this.blocks.has(type)) {
-        console.warn(
-          `[${source}] Block type "${type}" is already registered. Overwriting...`
-        );
+        if (process.env.NODE_ENV === 'development') {
+          console.warn(
+            `[${source}] Block type "${type}" is already registered. Overwriting...`
+          );
+        }
+        // In production, silently skip re-registration to avoid spam
+        return;
       }
 
       // Validate the module
@@ -95,7 +99,12 @@ class BentoBlockRegistry implements BlockRegistry {
    * Initialize the registry with core blocks and comprehensive error handling
    */
   async initialize() {
-    if (this.initialized) return;
+    if (this.initialized) {
+      if (process.env.NODE_ENV === 'development') {
+        console.log('🔄 Block registry already initialized, skipping...');
+      }
+      return;
+    }
 
     const startTime = Date.now();
     let successCount = 0;
@@ -481,8 +490,30 @@ class BentoBlockRegistry implements BlockRegistry {
   }
 }
 
+// Global singleton protection
+const GLOBAL_REGISTRY_KEY = '__BENTO_BLOCK_REGISTRY__';
+
+// Extend global type for registry storage
+declare global {
+  var __BENTO_BLOCK_REGISTRY__: BentoBlockRegistry | undefined;
+}
+
+// Check if registry already exists globally (prevents duplicate instances)
+if (typeof globalThis !== 'undefined' && globalThis[GLOBAL_REGISTRY_KEY]) {
+  if (process.env.NODE_ENV === 'development') {
+    console.log('♻️  Using existing block registry instance');
+  }
+}
+
 // Create and export the singleton instance
-export const blockRegistry = new BentoBlockRegistry();
+export const blockRegistry =
+  (typeof globalThis !== 'undefined' && globalThis[GLOBAL_REGISTRY_KEY]) ||
+  new BentoBlockRegistry();
+
+// Store globally to prevent duplicates
+if (typeof globalThis !== 'undefined') {
+  globalThis[GLOBAL_REGISTRY_KEY] = blockRegistry;
+}
 
 // Remove auto-initialization - let components initialize when needed
 // blockRegistry.initialize().catch(console.error);
