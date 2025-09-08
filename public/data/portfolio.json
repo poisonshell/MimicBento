@@ -193,6 +193,6 @@
     "hoverEffects": true,
     "scrollAnimation": true,
     "duration": 0.9,
-    "ease": "linear"
+    "ease": "easeIn"
   }
 }

@@ -72,7 +72,19 @@ ADMIN_PASSWORD_HASH_ENCODED=
 
 # Optional: Google Maps for location blocks
 NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=your-api-key
+
+# GitHub Contributions Configuration (for Git Activity block)
+# Allowed GitHub usernames
+# This prevents abuse of your API endpoint by limiting which users' data can be fetched
+ALLOWED_GITHUB_USERS=yourgithubusername
 ```
+
+**GitHub Contributions Block**
+- **Whitelist Protection:** Only specified usernames can fetch contribution data, preventing your API from being used as a proxy to scrape any GitHub user's data
+- **Server-side Caching:** 5-hour cache 
+- **Rate Limiting:** 20 requests per hour per IP prevents abuse and spam
+- **Graceful Degradation:** Automatically serves cached data if rate limited or API unavailable
+- **Minimal Memory:** ~60KB total memory usage for single-user portfolio setup
 
 **Important:** To change the admin password, see `.env.example` for hash generation instructions.
 
