@@ -8,7 +8,7 @@ import {
 
 // Text Header Block Component - For flexible text content with 60px height
 function TextHeaderBlockComponent({ block }: BlockComponentProps) {
-  const { content, title } = block;
+  const { content } = block;
 
   const sizeClasses = {
     small: 'text-sm',
@@ -66,7 +66,7 @@ function TextHeaderBlockComponent({ block }: BlockComponentProps) {
   const align = textAlign as keyof typeof alignClasses;
   const color = contentColor as keyof typeof colorClasses;
 
-  const displayTitle = title || contentTitle || 'Text Header';
+  const displayTitle = contentTitle || 'Text Header';
 
   return (
     <div className="flex items-center h-full py-2 px-4 transition-all duration-200 bg-white rounded-xl">
@@ -83,9 +83,8 @@ function TextHeaderBlockComponent({ block }: BlockComponentProps) {
         </div>
         {subtitle && (
           <p
-            className={`mt-0.5 text-gray-500 ${
-              size === 'small' ? 'text-xs' : 'text-sm'
-            } ${alignClasses[align]} leading-tight`}
+            className={`mt-0.5 text-gray-500 ${size === 'small' ? 'text-xs' : 'text-sm'
+              } ${alignClasses[align]} leading-tight`}
           >
             {subtitle}
           </p>

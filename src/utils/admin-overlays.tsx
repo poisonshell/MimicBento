@@ -21,14 +21,17 @@ interface AdminOverlaysProps {
   onDrop: (e: React.DragEvent, x: number, y: number) => void;
 }
 
-// Grid overlay component
+
 export const GridOverlay: React.FC<{
   blocks: BentoBlock[];
   totalRows: number;
   maxRow: number;
   draggedBlock: string | null;
-}> = ({ blocks, totalRows, maxRow }) => {
-  const occupiedCells = createOccupiedCellsMap(blocks);
+}> = ({ blocks, totalRows, maxRow, draggedBlock }) => {
+  const occupiedCells = createOccupiedCellsMap(
+    blocks,
+    draggedBlock || undefined
+  );
   const gridCells = createGridCells(totalRows, maxRow, occupiedCells, blocks);
 
   return (
@@ -36,28 +39,23 @@ export const GridOverlay: React.FC<{
       {gridCells.map(cell => (
         <div
           key={cell.key}
-          className={`border border-dashed relative pointer-events-none z-0 rounded-3xl ${
-            cell.isNewRow
-              ? 'border-blue-300 border-opacity-50 bg-blue-50 bg-opacity-30'
-              : 'border-gray-300 border-opacity-30'
-          }`}
+          className={`border relative pointer-events-none z-0 rounded-xl transition-all duration-200 ${cell.isNewRow
+            ? 'border-blue-300 border-opacity-50 bg-blue-50 bg-opacity-30'
+            : 'border-slate-300 border-opacity-30 bg-slate-50 bg-opacity-15'
+            }`}
           style={{
             gridColumn: cell.col + 1,
             gridRow: cell.row + 1,
+            borderStyle: 'dotted',
+            borderWidth: '1px',
           }}
-        >
-          {cell.isNewRow && cell.col === 0 && (
-            <div className="absolute inset-0 flex items-center justify-center text-xs text-blue-500 opacity-75">
-              Row {cell.row + 1}
-            </div>
-          )}
-        </div>
+        ></div>
       ))}
     </>
   );
 };
 
-// Add buttons component
+
 export const AddButtons: React.FC<{
   blocks: BentoBlock[];
   maxRow: number;
@@ -66,10 +64,13 @@ export const AddButtons: React.FC<{
 }> = ({ blocks, maxRow, draggedBlock, onAddBlock }) => {
   if (!onAddBlock || draggedBlock) return null;
 
-  const occupiedCells = createOccupiedCellsMap(blocks);
+  const occupiedCells = createOccupiedCellsMap(
+    blocks,
+    draggedBlock || undefined
+  );
   const addButtons = [];
 
-  // Find rows that contain header blocks
+
   const headerRows = new Set<number>();
   blocks.forEach(block => {
     if (isHeaderSize(block.size) || block.type === 'section-header') {
@@ -77,7 +78,7 @@ export const AddButtons: React.FC<{
     }
   });
 
-  // Add buttons for empty cells
+
   for (let row = 0; row <= maxRow + 2; row++) {
     for (let col = 0; col < 4; col++) {
       const cellKey = `${col}-${row}`;
@@ -95,30 +96,33 @@ export const AddButtons: React.FC<{
           >
             <button
               onClick={() => onAddBlock({ x: col, y: row })}
-              className={`w-full h-full border-2 border-dashed border-gray-300 hover:border-blue-400 bg-gray-50 hover:bg-blue-50 rounded-3xl transition-all duration-200 opacity-60 hover:opacity-100 flex items-center justify-center z-10 ${
-                isHeaderRow ? '' : 'min-h-[100px]'
-              }`}
+              className={`group w-full h-full border border-dotted bg-white hover:bg-slate-50 rounded-xl transition-all duration-200 ease-out flex items-center justify-center z-10 hover:shadow-sm ${isHeaderRow
+                ? 'border-slate-400 border-opacity-40 hover:border-blue-400 hover:border-opacity-60 opacity-80 hover:opacity-100'
+                : 'border-slate-400 border-opacity-40 hover:border-blue-400 hover:border-opacity-60 opacity-70 hover:opacity-100 min-h-[100px]'
+                }`}
             >
               <div
-                className={`flex flex-col items-center text-gray-400 hover:text-blue-500 ${
-                  isHeaderRow ? 'space-y-1' : 'space-y-2'
-                }`}
+                className={`flex flex-col items-center transition-all duration-300 ${isHeaderRow ? 'space-y-1' : 'space-y-2'
+                  }`}
               >
-                <svg
-                  className={isHeaderRow ? 'w-4 h-4' : 'w-8 h-8'}
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 4v16m8-8H4"
-                  />
-                </svg>
+                <div className={`${isHeaderRow ? 'w-4 h-4' : 'w-6 h-6'}`}>
+                  <svg
+                    className="w-full h-full text-slate-500 group-hover:text-blue-500 transition-colors duration-200"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={1.5}
+                      d="M12 4v16m8-8H4"
+                    />
+                  </svg>
+                </div>
                 <span
-                  className={`font-medium ${isHeaderRow ? 'text-xs' : 'text-sm'}`}
+                  className={`font-normal text-slate-600 group-hover:text-blue-600 transition-colors duration-200 ${isHeaderRow ? 'text-xs' : 'text-sm'
+                    }`}
                 >
                   Add Block
                 </span>
@@ -133,7 +137,7 @@ export const AddButtons: React.FC<{
   return <>{addButtons}</>;
 };
 
-// Drop zones component
+
 export const DropZones: React.FC<{
   blocks: BentoBlock[];
   totalRows: number;
@@ -151,62 +155,93 @@ export const DropZones: React.FC<{
   onDragLeave,
   onDrop,
 }) => {
-  if (!draggedBlock) return null;
+    if (!draggedBlock) return null;
 
-  const draggedBlockSize = getDraggedBlockSize(blocks, draggedBlock);
-  const draggedBlockData = blocks.find(b => b.id === draggedBlock);
-  const dropZones = createDropZones(
-    totalRows,
-    draggedBlockSize,
-    draggedBlockData,
-    dragOverCell,
-    draggedBlock,
-    (blockId: string, x: number, y: number) =>
-      checkCollisionWithHeightConstraint(blocks, blockId, x, y),
-    blocks // Pass blocks array for height constraint checking
-  );
+    const draggedBlockSize = getDraggedBlockSize(blocks, draggedBlock);
+    const draggedBlockData = blocks.find(b => b.id === draggedBlock);
+    const dropZones = createDropZones(
+      totalRows,
+      draggedBlockSize,
+      draggedBlockData,
+      dragOverCell,
+      draggedBlock,
+      (blockId: string, x: number, y: number) =>
+        checkCollisionWithHeightConstraint(blocks, blockId, x, y),
+      blocks
+    );
 
-  return (
-    <>
-      {dropZones.map(zone => {
-        if (zone.isDropZone) {
+    return (
+      <>
+        {dropZones.map(zone => {
+          if (zone.isDropZone) {
+            return (
+              <div
+                key={zone.key}
+                className="absolute inset-0 pointer-events-auto"
+                style={{
+                  gridColumn: zone.col + 1,
+                  gridRow: zone.row + 1,
+                  zIndex: 5,
+                }}
+                onDragOver={e => onDragOver(e, zone.col, zone.row)}
+                onDragLeave={onDragLeave}
+                onDrop={e => onDrop(e, zone.col, zone.row)}
+              />
+            );
+          }
+
           return (
             <div
               key={zone.key}
-              className="absolute inset-0 pointer-events-auto"
+              className={`absolute border pointer-events-none transition-all duration-200 ease-out rounded-xl shadow-sm ${zone.isValidDrop
+                ? 'border-blue-400 border-opacity-60'
+                : 'border-red-400 border-opacity-60'
+                }`}
               style={{
-                gridColumn: zone.col + 1,
-                gridRow: zone.row + 1,
-                zIndex: 5,
+                gridColumn: `${zone.col + 1} / span ${zone.colSpan}`,
+                gridRow: `${zone.row + 1} / span ${zone.rowSpan}`,
+                zIndex: 999999,
+                background: zone.isValidDrop
+                  ? 'rgba(59, 130, 246, 0.08)'
+                  : 'rgba(239, 68, 68, 0.08)',
+                borderStyle: 'dotted',
+                borderWidth: '2px',
               }}
-              onDragOver={e => onDragOver(e, zone.col, zone.row)}
-              onDragLeave={onDragLeave}
-              onDrop={e => onDrop(e, zone.col, zone.row)}
-            />
+            >
+              { }
+              <div className="absolute inset-0 flex items-center justify-center">
+                <svg
+                  className={`w-5 h-5 ${zone.isValidDrop ? 'text-blue-500' : 'text-red-500'
+                    }`}
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  {zone.isValidDrop ? (
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M5 13l4 4L19 7"
+                    />
+                  ) : (
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M6 18L18 6M6 6l12 12"
+                    />
+                  )}
+                </svg>
+              </div>
+            </div>
           );
-        }
+        })}
+      </>
+    );
+  };
 
-        return (
-          <div
-            key={zone.key}
-            className="absolute border-2 border-dashed pointer-events-none transition-all duration-200 rounded-3xl"
-            style={{
-              gridColumn: `${zone.col + 1} / span ${zone.colSpan}`,
-              gridRow: `${zone.row + 1} / span ${zone.rowSpan}`,
-              zIndex: 999999,
-              backgroundColor: zone.isValidDrop
-                ? 'rgba(59, 130, 246, 0.1)'
-                : 'rgba(239, 68, 68, 0.1)',
-              borderColor: zone.isValidDrop ? '#60a5fa' : '#f87171',
-            }}
-          ></div>
-        );
-      })}
-    </>
-  );
-};
 
-// Main admin overlays component
 export const AdminOverlays: React.FC<AdminOverlaysProps> = ({
   blocks,
   totalRows,
@@ -220,7 +255,7 @@ export const AdminOverlays: React.FC<AdminOverlaysProps> = ({
 }) => {
   return (
     <>
-      {/* Grid overlay for admin */}
+      { }
       <GridOverlay
         blocks={blocks}
         totalRows={totalRows}
@@ -228,7 +263,7 @@ export const AdminOverlays: React.FC<AdminOverlaysProps> = ({
         draggedBlock={draggedBlock}
       />
 
-      {/* Invisible drop zones */}
+      { }
       <DropZones
         blocks={blocks}
         totalRows={totalRows}
@@ -239,7 +274,7 @@ export const AdminOverlays: React.FC<AdminOverlaysProps> = ({
         onDrop={onDrop}
       />
 
-      {/* Add buttons for empty cells */}
+      { }
       <AddButtons
         blocks={blocks}
         maxRow={maxRow}

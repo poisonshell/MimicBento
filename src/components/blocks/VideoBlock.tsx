@@ -60,7 +60,7 @@ function getVideoThumbnail(url: string, platform: string): string[] {
 }
 
 function VideoBlockComponent({ block }: BlockComponentProps) {
-  const { content, title } = block;
+  const { content } = block;
   const [imageError, setImageError] = useState(false);
   const [currentThumbnailIndex, setCurrentThumbnailIndex] = useState(0);
 
@@ -75,7 +75,7 @@ function VideoBlockComponent({ block }: BlockComponentProps) {
   const platform =
     typeof contentRecord.platform === 'string' ? contentRecord.platform : '';
 
-  if (!url && !videoTitle && !title) {
+  if (!url && !videoTitle) {
     return (
       <div className="flex items-center justify-center h-full text-gray-500">
         <span>Configure video details</span>
@@ -115,7 +115,7 @@ function VideoBlockComponent({ block }: BlockComponentProps) {
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={currentThumbnailUrl}
-            alt={videoTitle || title || 'Video thumbnail'}
+            alt={videoTitle || 'Video thumbnail'}
             className="w-full h-full object-cover"
             onError={handleImageError}
           />
@@ -157,7 +157,7 @@ function VideoBlockComponent({ block }: BlockComponentProps) {
       {/* Content area */}
       <div className="p-3 bg-white">
         <div className="font-medium text-gray-900 text-sm line-clamp-2 mb-1">
-          {videoTitle || title || 'Video Title'}
+          {videoTitle || 'Video Title'}
         </div>
         {description && (
           <div className="text-gray-500 text-xs line-clamp-2 mb-2">

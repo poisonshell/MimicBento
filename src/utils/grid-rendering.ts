@@ -5,10 +5,18 @@ import {
   isBlockCompatibleWithRow,
 } from './grid-calculations';
 
-export const createOccupiedCellsMap = (blocks: BentoBlock[]) => {
+export const createOccupiedCellsMap = (
+  blocks: BentoBlock[],
+  excludeBlockId?: string
+) => {
   const occupiedCells = new Set<string>();
 
   blocks.forEach(block => {
+    // Skip the excluded block (typically the currently dragged block)
+    if (excludeBlockId && block.id === excludeBlockId) {
+      return;
+    }
+
     const { colSpan, rowSpan } = getBlockDimensions(block.size);
 
     for (let row = block.position.y; row < block.position.y + rowSpan; row++) {

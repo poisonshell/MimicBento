@@ -7,7 +7,7 @@ import {
 } from '@/types/bento';
 
 function SectionHeaderBlockComponent({ block }: BlockComponentProps) {
-  const { content, title } = block;
+  const { content } = block;
 
   const sizeClasses = {
     small: 'text-sm',
@@ -57,7 +57,7 @@ function SectionHeaderBlockComponent({ block }: BlockComponentProps) {
     'left') as keyof typeof alignClasses;
   const color = (contentColor || 'gray-800') as keyof typeof colorClasses;
 
-  const displayTitle = title || contentTitle || 'Section Header';
+  const displayTitle = contentTitle || 'Section Header';
 
   return (
     <div className="flex items-center h-full py-2 px-4 transition-all duration-200">
@@ -69,9 +69,8 @@ function SectionHeaderBlockComponent({ block }: BlockComponentProps) {
         </h2>
         {subtitle && (
           <p
-            className={`mt-0.5 text-gray-500 ${
-              size === 'small' ? 'text-xs' : 'text-sm'
-            } ${alignClasses[align]} leading-tight`}
+            className={`mt-0.5 text-gray-500 ${size === 'small' ? 'text-xs' : 'text-sm'
+              } ${alignClasses[align]} leading-tight`}
           >
             {subtitle}
           </p>

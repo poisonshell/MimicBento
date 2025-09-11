@@ -9,34 +9,24 @@ import {
   GeocodeResult,
 } from '@/types/bento';
 
-// Enhanced Google Maps type definitions
+
 interface GoogleMapsAPI {
   maps: {
     Map: new (element: HTMLElement, options: GoogleMapOptions) => GoogleMap;
-    Marker: new (options: MarkerOptions) => GoogleMarker;
-    Circle: new (options: CircleOptions) => GoogleCircle;
     Geocoder: new () => GoogleGeocoder;
     OverlayView: new () => GoogleOverlayView;
     LatLng: new (lat: number, lng: number) => LatLng;
     event: {
       trigger: (instance: GoogleMap, eventName: string) => void;
     };
-    SymbolPath: {
-      CIRCLE: number;
-    };
   };
 }
 
 interface GoogleMap {
   overlays?: GoogleOverlay[];
-}
-
-interface GoogleMarker {
-  setMap(map: GoogleMap | null): void;
-}
-
-interface GoogleCircle {
-  setMap(map: GoogleMap | null): void;
+  setOptions(options: Partial<GoogleMapOptions>): void;
+  addListener(eventName: string, handler: () => void): void;
+  getOptions?(): Partial<GoogleMapOptions>;
 }
 
 interface GoogleGeocoder {
@@ -49,6 +39,7 @@ interface GoogleGeocoder {
 interface GoogleOverlayView {
   getPanes(): {
     overlayLayer: HTMLElement;
+    overlayMouseTarget: HTMLElement;
   } | null;
   getProjection(): {
     fromLatLngToDivPixel(latLng: LatLng): { x: number; y: number } | null;
@@ -64,6 +55,8 @@ interface LatLng {
 interface GoogleMapOptions {
   center: LatLng;
   zoom: number;
+  mapId?: string;
+  mapTypeId?: string;
   styles: MapStyle[];
   disableDefaultUI: boolean;
   gestureHandling: string;
@@ -77,30 +70,6 @@ interface GoogleMapOptions {
   clickableIcons: boolean;
   scrollwheel: boolean;
   panControl: boolean;
-}
-
-interface MarkerOptions {
-  position: LatLng;
-  map: GoogleMap;
-  title: string;
-  icon: {
-    path: number;
-    scale: number;
-    fillColor: string;
-    fillOpacity: number;
-    strokeColor: string;
-    strokeWeight: number;
-  };
-}
-
-interface CircleOptions {
-  strokeColor: string;
-  strokeOpacity: number;
-  fillColor: string;
-  fillOpacity: number;
-  map: GoogleMap;
-  center: LatLng;
-  radius: number;
 }
 
 interface MapStyle {
@@ -126,24 +95,30 @@ declare global {
   }
 }
 
+
 function MapBlockComponent({ block, isMobile }: BlockComponentProps) {
   const { content, title } = block;
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<GoogleMap | null>(null);
   const resizeObserverRef = useRef<ResizeObserver | null>(null);
 
-  // Type-safe content access
+
   const contentRecord = content as Record<string, unknown>;
   const location =
     typeof contentRecord.location === 'string' ? contentRecord.location : '';
   const address =
     typeof contentRecord.address === 'string' ? contentRecord.address : '';
-  const zoom = typeof contentRecord.zoom === 'number' ? contentRecord.zoom : 12;
+  const zoom =
+    typeof contentRecord.zoom === 'string'
+      ? parseInt(contentRecord.zoom, 10)
+      : typeof contentRecord.zoom === 'number'
+        ? contentRecord.zoom
+        : 12;
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
-    // Add a small delay to ensure the block is fully rendered
+
     const initTimeout = setTimeout(
       () => {
         loadGoogleMaps();
@@ -151,12 +126,12 @@ function MapBlockComponent({ block, isMobile }: BlockComponentProps) {
       isMobile ? 100 : 50
     );
 
-    // Set up resize observer for mobile block resizing
+
     if (isMobile && mapRef.current && 'ResizeObserver' in window) {
       resizeObserverRef.current = new ResizeObserver(entries => {
         for (const entry of entries) {
           if (entry.target === mapRef.current && mapInstanceRef.current) {
-            // Trigger map resize and recenter
+
             setTimeout(() => {
               if (window.google && mapInstanceRef.current) {
                 window.google.maps.event.trigger(
@@ -177,7 +152,7 @@ function MapBlockComponent({ block, isMobile }: BlockComponentProps) {
         return;
       }
 
-      // Check if script is already loading
+
       if (document.querySelector('script[src*="maps.googleapis.com"]')) {
         const checkGoogle = setInterval(() => {
           if (window.google && window.google.maps) {
@@ -188,7 +163,7 @@ function MapBlockComponent({ block, isMobile }: BlockComponentProps) {
         return;
       }
 
-      // Load Google Maps script
+
       const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
       if (!apiKey) {
         console.error('Google Maps API key is not configured');
@@ -205,17 +180,22 @@ function MapBlockComponent({ block, isMobile }: BlockComponentProps) {
     };
 
     const initializeMap = () => {
-      // Check if Google Maps API is fully loaded
-      if (!mapRef.current || !window.google || !window.google.maps || !window.google.maps.Geocoder) {
-        // API not ready yet, retry after a short delay
+
+      if (
+        !mapRef.current ||
+        !window.google ||
+        !window.google.maps ||
+        !window.google.maps.Geocoder
+      ) {
+
         setTimeout(initializeMap, 100);
         return;
       }
 
-      // Prevent duplicate initialization
+
       if (mapInstanceRef.current) return;
 
-      // Geocode the location
+
       const geocoder = new window.google.maps.Geocoder();
       const searchQuery = address || location;
 
@@ -225,16 +205,16 @@ function MapBlockComponent({ block, isMobile }: BlockComponentProps) {
           if (status === 'OK' && results && results[0] && mapRef.current) {
             const locationResult = results[0].geometry.location;
 
-            // Adjust map center for mobile square format
+
             let mapCenter = locationResult;
             if (isMobile && window.google) {
-              // For mobile square blocks, center the marker more precisely
-              // Since mobile blocks are square (aspect-square), we need minimal offset
+
+
               const lat = locationResult.lat();
               const lng = locationResult.lng();
-              // Minimal westward offset for square format to leave room for labels
+
               mapCenter = new window.google.maps.LatLng(lat, lng - 0.001);
-            } // Exact replica of original bento.me map colors
+            }
             const mapStyles: MapStyle[] = [
               {
                 featureType: 'all',
@@ -246,7 +226,7 @@ function MapBlockComponent({ block, isMobile }: BlockComponentProps) {
                 elementType: 'geometry',
                 stylers: [{ visibility: 'on' }],
               },
-              // All labels disabled - we use custom overlays instead
+
               {
                 featureType: 'administrative',
                 elementType: 'geometry',
@@ -312,7 +292,7 @@ function MapBlockComponent({ block, isMobile }: BlockComponentProps) {
                 elementType: 'geometry',
                 stylers: [{ color: '#86c4f6' }],
               },
-              // Hide grid lines and other UI elements
+
               {
                 featureType: 'all',
                 elementType: 'geometry.stroke',
@@ -340,10 +320,13 @@ function MapBlockComponent({ block, isMobile }: BlockComponentProps) {
               },
             ];
 
-            const mapOptions: GoogleMapOptions = {
+
+
+            const mapOptions: Omit<GoogleMapOptions, 'mapId'> = {
               center: mapCenter,
-              zoom: isMobile ? Math.max(zoom - 1, 8) : zoom, // Slightly zoom out on mobile
+              zoom: isMobile ? Math.max(zoom - 1, 8) : zoom,
               styles: mapStyles,
+              mapTypeId: 'roadmap',
               disableDefaultUI: true,
               gestureHandling: 'none',
               zoomControl: false,
@@ -355,22 +338,37 @@ function MapBlockComponent({ block, isMobile }: BlockComponentProps) {
               keyboardShortcuts: false,
               clickableIcons: false,
               scrollwheel: false,
-              // Removed draggable: false to allow block dragging
               panControl: false,
             };
 
             const map = new window.google.maps.Map(mapRef.current, mapOptions);
             mapInstanceRef.current = map;
 
-            // Store references to overlays for cleanup
+
+            const forceStyles = () => {
+              map.setOptions({
+                styles: mapStyles,
+                mapTypeId: 'roadmap',
+              });
+            };
+
+
+            forceStyles();
+            setTimeout(forceStyles, 100);
+            setTimeout(forceStyles, 500);
+
+
+            map.addListener('idle', forceStyles);
+
+
             const overlays: GoogleOverlay[] = [];
             map.overlays = overlays;
 
-            // Hide Google copyright and controls completely + Add marker animation
+
             setTimeout(() => {
               const mapElement = mapRef.current;
               if (mapElement) {
-                // Hide all Google copyright and control elements + Add marker pulse animation
+
                 const style = document.createElement('style');
                 style.textContent = `
                   .gm-style-cc { display: none !important; }
@@ -390,7 +388,7 @@ function MapBlockComponent({ block, isMobile }: BlockComponentProps) {
                   .gmnoprint div { display: none !important; }
                   .gm-style div[title] { pointer-events: none !important; }
                   
-                  /* Mobile square format label positioning */
+                  
                   .gm-style-pbt {
                     transform: ${isMobile ? 'translateX(18px) translateY(-8px)' : 'translateX(40px) translateY(-10px)'} !important;
                   }
@@ -399,7 +397,7 @@ function MapBlockComponent({ block, isMobile }: BlockComponentProps) {
                     transform: ${isMobile ? 'translateX(18px) translateY(-8px)' : 'translateX(40px) translateY(-10px)'} !important;
                   }
                   
-                  /* Alternative approach for mobile square label positioning */
+                  
                   .gm-style > div > div > div > div[style*="position: absolute"] div[style*="font-size: 11px"] {
                     transform: ${isMobile ? 'translateX(15px) translateY(-6px)' : 'translateX(35px) translateY(-8px)'} !important;
                     font-size: ${isMobile ? '10px' : '11px'} !important;
@@ -410,53 +408,102 @@ function MapBlockComponent({ block, isMobile }: BlockComponentProps) {
                     font-size: ${isMobile ? '11px' : '12px'} !important;
                   }
                   
-                  @keyframes markerPulse {
-                    0% {
-                      transform: translate(-50%, -50%) scale(1);
-                      opacity: 0.2;
-                    }
-                    75%, 100% {
-                      transform: translate(-50%, -50%) scale(2);
-                      opacity: 0;
-                    }
-                  }
                 `;
                 document.head.appendChild(style);
               }
             }, 100);
 
-            // Create a static marker without bounce animation
-            new window.google.maps.Marker({
-              position: locationResult,
-              map: map,
-              title: location,
-              icon: {
-                path: window.google.maps.SymbolPath.CIRCLE,
-                scale: 12,
-                fillColor: '#679BFF',
-                fillOpacity: 0.9,
-                strokeColor: '#ffffff',
-                strokeWeight: 3,
-              },
-              // Remove bouncing animation for smooth pulsing effect
-            });
 
-            // Animate the pulsing effect with smooth CSS animations and move labels
+
+            class CustomPinMarker extends window.google.maps.OverlayView {
+              private position: LatLng;
+              private div: HTMLElement | null = null;
+
+              constructor(position: LatLng) {
+                super();
+                this.position = position;
+              }
+
+              onAdd() {
+                this.div = document.createElement('div');
+                this.div.className = 'custom-pin-marker';
+                this.div.style.position = 'absolute';
+                this.div.style.cursor = 'pointer';
+                this.div.style.width = '32px';
+                this.div.style.height = '32px';
+                this.div.style.transform = 'translate(-50%, -50%)';
+                this.div.title = location;
+
+
+                const pin = document.createElement('div');
+                pin.className = 'custom-pin';
+                pin.style.width = '24px';
+                pin.style.height = '24px';
+                pin.style.backgroundColor = '#679BFF';
+                pin.style.border = '3px solid #ffffff';
+                pin.style.borderRadius = '50%';
+                pin.style.boxShadow = '0 2px 8px rgba(0,0,0,0.3)';
+                pin.style.position = 'relative';
+                pin.style.left = '4px';
+                pin.style.top = '4px';
+
+                this.div.appendChild(pin);
+
+                const panes = this.getPanes();
+                panes?.overlayMouseTarget.appendChild(this.div);
+              }
+
+              draw() {
+                if (!this.div) return;
+
+                const projection = this.getProjection();
+                const point = projection.fromLatLngToDivPixel(this.position);
+
+                if (point) {
+                  this.div.style.left = point.x + 'px';
+                  this.div.style.top = point.y + 'px';
+                }
+              }
+
+              onRemove() {
+                if (this.div && this.div.parentNode) {
+                  this.div.parentNode.removeChild(this.div);
+                  this.div = null;
+                }
+              }
+            }
+
+
+            const customMarker = new CustomPinMarker(locationResult);
+            customMarker.setMap(map);
+            overlays.push(customMarker);
+
+
             setTimeout(() => {
               const mapElement = mapRef.current;
               if (mapElement) {
                 const pulseStyle = document.createElement('style');
                 pulseStyle.textContent = `
-                  .gm-style > div > div:nth-child(2) > div:nth-child(3) {
+                  
+                  .custom-pin {
                     animation: smoothPulse 2s ease-in-out infinite !important;
                   }
-                  .gm-style > div > div:nth-child(2) > div:nth-child(4) {
-                    animation: smoothPulse 2s ease-in-out infinite 0.5s !important;
+                  
+                  
+                  @keyframes smoothPulse {
+                    0%, 100% {
+                      transform: scale(1);
+                      opacity: 0.9;
+                    }
+                    50% {
+                      transform: scale(1.1);
+                      opacity: 1;
+                    }
                   }
                 `;
                 document.head.appendChild(pulseStyle);
 
-                // Create custom location labels using OverlayView positioned away from marker
+
                 const locationName = results[0].address_components?.find(
                   (component: AddressComponent) =>
                     component.types.includes('locality')
@@ -467,7 +514,7 @@ function MapBlockComponent({ block, isMobile }: BlockComponentProps) {
                     component.types.includes('administrative_area_level_1')
                 )?.short_name;
 
-                // Custom overlay class for labels with precise offset positioning
+
                 class LabelOverlay extends window.google.maps.OverlayView {
                   private div: HTMLElement | null = null;
                   private position: LatLng;
@@ -531,34 +578,34 @@ function MapBlockComponent({ block, isMobile }: BlockComponentProps) {
                   }
                 }
 
-                // Create labels with mobile square format positioning
+
                 if (locationName) {
-                  // For mobile square blocks, use compact positioning
-                  const xOffset = isMobile ? 15 : 50; // Compact offset for square
-                  const yOffset = isMobile ? -8 : -10; // Slightly higher for square
+
+                  const xOffset = isMobile ? 15 : 50;
+                  const yOffset = isMobile ? -8 : -10;
 
                   const cityLabel = new LabelOverlay(
                     locationResult,
                     locationName,
                     xOffset,
                     yOffset,
-                    '10px' // Smaller font for mobile square
+                    '10px'
                   );
                   cityLabel.setMap(map);
                   overlays.push(cityLabel);
                 }
 
                 if (stateName) {
-                  // For mobile square blocks, use compact positioning
-                  const xOffset = isMobile ? 15 : 50; // Compact offset for square
-                  const yOffset = isMobile ? 8 : 5; // Slightly lower for square
+
+                  const xOffset = isMobile ? 15 : 50;
+                  const yOffset = isMobile ? 8 : 5;
 
                   const stateLabel = new LabelOverlay(
                     locationResult,
                     stateName,
                     xOffset,
                     yOffset,
-                    '11px' // Smaller font for mobile square
+                    '11px'
                   );
                   stateLabel.setMap(map);
                   overlays.push(stateLabel);
@@ -566,7 +613,7 @@ function MapBlockComponent({ block, isMobile }: BlockComponentProps) {
               }
             }, 200);
           } else {
-            // Fallback if geocoding fails
+
             showFallbackMap();
           }
         }
@@ -576,12 +623,12 @@ function MapBlockComponent({ block, isMobile }: BlockComponentProps) {
     const showFallbackMap = () => {
       if (!mapRef.current) return;
 
-      // Create fallback content safely without innerHTML
+
       const fallbackContainer = document.createElement('div');
       fallbackContainer.className =
         'flex flex-col items-center justify-center h-full text-center p-4 bg-gradient-to-br from-sky-50 via-blue-50 to-indigo-100 text-gray-700 relative overflow-hidden';
 
-      // Background decorative elements
+
       const backgroundDiv = document.createElement('div');
       backgroundDiv.className = 'absolute inset-0 opacity-10';
 
@@ -601,15 +648,15 @@ function MapBlockComponent({ block, isMobile }: BlockComponentProps) {
       backgroundDiv.appendChild(circle2);
       backgroundDiv.appendChild(circle3);
 
-      // Content container
+
       const contentDiv = document.createElement('div');
       contentDiv.className = 'relative z-10';
 
-      // Icon container
+
       const iconDiv = document.createElement('div');
       iconDiv.className = 'mb-2';
 
-      // Create SVG icon
+
       const svgIcon = document.createElementNS(
         'http://www.w3.org/2000/svg',
         'svg'
@@ -644,19 +691,19 @@ function MapBlockComponent({ block, isMobile }: BlockComponentProps) {
       svgIcon.appendChild(path2);
       iconDiv.appendChild(svgIcon);
 
-      // Title
+
       const titleElement = document.createElement('h3');
       titleElement.className = 'font-semibold text-sm mb-1 text-gray-800';
       titleElement.textContent = String(title || location);
 
-      // Address (if exists)
+
       const addressElement = document.createElement('p');
       if (address) {
         addressElement.className = 'text-xs text-gray-600';
         addressElement.textContent = String(address);
       }
 
-      // Assemble the content
+
       contentDiv.appendChild(iconDiv);
       contentDiv.appendChild(titleElement);
       if (address) {
@@ -666,14 +713,14 @@ function MapBlockComponent({ block, isMobile }: BlockComponentProps) {
       fallbackContainer.appendChild(backgroundDiv);
       fallbackContainer.appendChild(contentDiv);
 
-      // Clear and append new content
+
       mapRef.current.innerHTML = '';
       mapRef.current.appendChild(fallbackContainer);
     };
 
     if (!location) {
       if (mapRef.current) {
-        // Create "add location" content safely without innerHTML
+
         const emptyStateContainer = document.createElement('div');
         emptyStateContainer.className =
           'flex flex-col items-center justify-center h-full text-center p-4 bg-gradient-to-br from-sky-50 via-blue-50 to-indigo-100 text-gray-700 relative overflow-hidden';
@@ -681,11 +728,11 @@ function MapBlockComponent({ block, isMobile }: BlockComponentProps) {
         const contentDiv = document.createElement('div');
         contentDiv.className = 'relative z-10';
 
-        // Icon container
+
         const iconDiv = document.createElement('div');
         iconDiv.className = 'mb-2';
 
-        // Create SVG icon
+
         const svgIcon = document.createElementNS(
           'http://www.w3.org/2000/svg',
           'svg'
@@ -720,17 +767,17 @@ function MapBlockComponent({ block, isMobile }: BlockComponentProps) {
         svgIcon.appendChild(path2);
         iconDiv.appendChild(svgIcon);
 
-        // Title
+
         const titleElement = document.createElement('h3');
         titleElement.className = 'font-semibold text-sm mb-1 text-gray-800';
         titleElement.textContent = 'Add a location';
 
-        // Assemble the content
+
         contentDiv.appendChild(iconDiv);
         contentDiv.appendChild(titleElement);
         emptyStateContainer.appendChild(contentDiv);
 
-        // Clear and append new content
+
         mapRef.current.innerHTML = '';
         mapRef.current.appendChild(emptyStateContainer);
       }
@@ -740,18 +787,18 @@ function MapBlockComponent({ block, isMobile }: BlockComponentProps) {
     loadGoogleMaps();
 
     return () => {
-      // Clear timeout if component unmounts
+
       clearTimeout(initTimeout);
 
-      // Clean up resize observer
+
       if (resizeObserverRef.current) {
         resizeObserverRef.current.disconnect();
         resizeObserverRef.current = null;
       }
 
-      // Cleanup overlays and map
+
       if (mapInstanceRef.current && mapInstanceRef.current.overlays) {
-        // Remove any existing overlays
+
         const existingOverlays = mapInstanceRef.current.overlays;
         existingOverlays.forEach((overlay: GoogleOverlay) => {
           if (overlay && typeof overlay.setMap === 'function') {
@@ -765,7 +812,7 @@ function MapBlockComponent({ block, isMobile }: BlockComponentProps) {
 
   return (
     <div className="w-full h-full relative overflow-hidden bg-gradient-to-br from-sky-100 to-blue-200 rounded-xl">
-      {/* Simple loading state without clouds */}
+      { }
       <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-sky-50 via-blue-50 to-indigo-100">
         <div className="text-center">
           <div className="animate-bounce mb-2">
@@ -793,16 +840,16 @@ function MapBlockComponent({ block, isMobile }: BlockComponentProps) {
         </div>
       </div>
 
-      {/* Map container with hidden Google elements */}
+      { }
       <div
         ref={mapRef}
         className="w-full h-full pointer-events-none [&_.gm-style-cc]:hidden [&_.gmnoprint]:hidden [&_[title='Toggle fullscreen view']]:hidden [&_[title='Keyboard shortcuts']]:hidden"
       />
 
-      {/* Floating clouds overlay - exact replica of bento.me */}
+      { }
       <div className="absolute inset-0 pointer-events-none overflow-hidden z-5">
-        {/* Background cloud with blur and low brightness */}
-        {/* eslint-disable-next-line @next/next/no-img-element */}
+        { }
+        { }
         <img
           src="/cloud.png"
           alt=""
@@ -814,8 +861,8 @@ function MapBlockComponent({ block, isMobile }: BlockComponentProps) {
           }}
         />
 
-        {/* Main visible cloud - slowly drifting */}
-        {/* eslint-disable-next-line @next/next/no-img-element */}
+        { }
+        { }
         <img
           src="/cloud.png"
           alt=""
@@ -827,8 +874,8 @@ function MapBlockComponent({ block, isMobile }: BlockComponentProps) {
           }}
         />
 
-        {/* Secondary cloud - floating gently */}
-        {/* eslint-disable-next-line @next/next/no-img-element */}
+        { }
+        { }
         <img
           src="/cloud.png"
           alt=""
@@ -841,8 +888,8 @@ function MapBlockComponent({ block, isMobile }: BlockComponentProps) {
           }}
         />
 
-        {/* Small floating cloud - bobbing motion */}
-        {/* eslint-disable-next-line @next/next/no-img-element */}
+        { }
+        { }
         <img
           src="/cloud.png"
           alt=""
@@ -855,8 +902,8 @@ function MapBlockComponent({ block, isMobile }: BlockComponentProps) {
           }}
         />
 
-        {/* Flying airplane - circular flight path */}
-        {/* eslint-disable-next-line @next/next/no-img-element */}
+        { }
+        { }
         <img
           src="/plane.png"
           alt=""
@@ -868,8 +915,8 @@ function MapBlockComponent({ block, isMobile }: BlockComponentProps) {
           }}
         />
 
-        {/* Airplane shadow - follows plane */}
-        {/* eslint-disable-next-line @next/next/no-img-element */}
+        { }
+        { }
         <img
           src="/planeshadow.png"
           alt=""
@@ -885,7 +932,7 @@ function MapBlockComponent({ block, isMobile }: BlockComponentProps) {
   );
 }
 
-// Block configuration
+
 const config: BlockConfig = {
   type: 'map',
   name: 'Map',
@@ -900,7 +947,7 @@ const config: BlockConfig = {
   },
 };
 
-// Configuration form
+
 const configForm: BlockConfigForm = {
   fields: [
     {
@@ -951,13 +998,13 @@ const configForm: BlockConfigForm = {
   },
 };
 
-// Default content when creating a new map block
+
 const getDefaultContent = (): Record<string, unknown> => ({
   location: '',
-  zoom: 12,
+  zoom: '12',
 });
 
-// Preview component for the add modal
+
 function MapPreviewComponent({
   content,
 }: {

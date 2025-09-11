@@ -410,10 +410,6 @@ export interface GoogleMap {
   overlays?: GoogleOverlay[];
 }
 
-export interface GoogleMarker {
-  setMap(map: GoogleMap | null): void;
-}
-
 export interface GoogleGeocoder {
   geocode(
     request: { address: string },
@@ -422,7 +418,7 @@ export interface GoogleGeocoder {
 }
 
 export interface GoogleInfoWindow {
-  open(map?: GoogleMap, anchor?: GoogleMarker): void;
+  open(map?: GoogleMap, anchor?: Record<string, unknown>): void;
   close(): void;
   setContent(content: string | HTMLElement): void;
 }
@@ -450,10 +446,17 @@ export interface GoogleMapsConfig {
         element: HTMLElement,
         options: Record<string, unknown>
       ) => GoogleMap;
-      Marker: new (options: Record<string, unknown>) => GoogleMarker;
       Geocoder: new () => GoogleGeocoder;
       InfoWindow: new (options?: Record<string, unknown>) => GoogleInfoWindow;
       LatLng: new (lat: number, lng: number) => GoogleLatLng;
+      marker: {
+        AdvancedMarkerElement: new (
+          options: Record<string, unknown>
+        ) => Record<string, unknown>;
+        PinElement: new (
+          options?: Record<string, unknown>
+        ) => Record<string, unknown>;
+      };
       places: {
         PlacesService: new (map: GoogleMap) => GooglePlacesService;
         PlacesServiceStatus: Record<string, string>;

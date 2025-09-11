@@ -12,6 +12,9 @@ function LinkBlockComponent({ block }: BlockComponentProps) {
   const title = typeof content?.title === 'string' ? content.title : '';
   const description =
     typeof content?.description === 'string' ? content.description : '';
+  const logo = typeof content?.logo === 'string' ? content.logo : '';
+  const backgroundColor =
+    typeof content?.backgroundColor === 'string' ? content.backgroundColor : '';
 
   if (!url) {
     return (
@@ -21,24 +24,84 @@ function LinkBlockComponent({ block }: BlockComponentProps) {
     );
   }
 
+  // Dynamic styling based on background color
+  const hasCustomBackground = backgroundColor && backgroundColor !== '';
+  const containerStyle = hasCustomBackground ? { backgroundColor } : {};
+
+  // Text color adjustments based on background
+  const getTextColor = () => {
+    if (!hasCustomBackground) return 'text-gray-900';
+
+    // Simple light/dark detection for better contrast
+    if (backgroundColor) {
+      const hex = backgroundColor.replace('#', '');
+      const r = parseInt(hex.substr(0, 2), 16);
+      const g = parseInt(hex.substr(2, 2), 16);
+      const b = parseInt(hex.substr(4, 2), 16);
+      const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+      return brightness > 128 ? 'text-gray-900' : 'text-white';
+    }
+    return 'text-gray-900';
+  };
+
+  const getSecondaryTextColor = () => {
+    if (!hasCustomBackground) return 'text-gray-500';
+    const primaryColor = getTextColor();
+    return primaryColor === 'text-white' ? 'text-gray-200' : 'text-gray-600';
+  };
+
+  const getUrlTextColor = () => {
+    if (!hasCustomBackground) return 'text-gray-400';
+    const primaryColor = getTextColor();
+    return primaryColor === 'text-white' ? 'text-gray-300' : 'text-gray-500';
+  };
+
+  const textColor = getTextColor();
+  const secondaryTextColor = getSecondaryTextColor();
+  const urlTextColor = getUrlTextColor();
+
   return (
-    <div className="flex flex-col justify-between h-full p-4 relative">
+    <div
+      className={`flex flex-col justify-between h-full p-4 relative rounded-xl transition-all duration-200 ${hasCustomBackground ? '' : 'bg-white'} hover:shadow-md`}
+      style={containerStyle}
+    >
+      {/* Title and description at the top */}
       <div className="flex flex-col space-y-1">
-        <div className="font-medium text-gray-900 text-base">
+        <div className={`font-medium text-base ${textColor} line-clamp-2`}>
           {title || 'Link'}
         </div>
         {description && (
-          <div className="text-gray-500 text-sm">{description}</div>
+          <div className={`text-sm ${secondaryTextColor} line-clamp-2`}>
+            {description}
+          </div>
         )}
       </div>
 
-      <div className="text-xs text-gray-400 truncate mt-2">{url}</div>
+      {/* Centered logo */}
+      {logo && (
+        <div className="flex-1 flex items-center justify-center py-2">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={logo}
+            alt={`${title} logo`}
+            className="w-12 h-12 rounded-lg object-cover shadow-sm"
+            onError={e => {
+              (e.target as HTMLElement).style.display = 'none';
+            }}
+          />
+        </div>
+      )}
+
+      {/* URL at bottom */}
+      <div className={`text-xs ${urlTextColor} truncate mt-3`}>
+        {url.replace(/^https?:\/\//, '')}
+      </div>
 
       <a
         href={url}
         target="_blank"
         rel="noopener noreferrer"
-        className="absolute inset-0"
+        className="absolute inset-0 rounded-xl"
         aria-label={`Visit ${title || 'link'}`}
       />
     </div>
@@ -98,6 +161,27 @@ const configForm: BlockConfigForm = {
         message: 'Description must be 150 characters or less',
       },
     },
+    {
+      key: 'logo',
+      label: 'Logo/Icon (optional)',
+      type: 'file',
+      placeholder: 'https://example.com/logo.png',
+      help: 'Upload a logo or icon for this link (recommended size: 40x40px)',
+      accept: 'image/*',
+      validation: {
+        pattern:
+          '^(https?://.*\\.(jpg|jpeg|png|gif|webp|svg)($|\\?)|/uploads/.*\\.(jpg|jpeg|png|gif|webp))($|\\?)',
+        message: 'Please upload an image or enter a valid image URL',
+      },
+    },
+    {
+      key: 'backgroundColor',
+      label: 'Background Color (optional)',
+      type: 'color',
+      placeholder: '#ffffff',
+      help: 'Set a custom background color for this link block',
+      defaultValue: '',
+    },
   ],
   validate: data => {
     if (!data.url || !data.title) {
@@ -112,6 +196,8 @@ const getDefaultContent = () => ({
   url: '',
   title: '',
   description: '',
+  logo: '',
+  backgroundColor: '',
 });
 
 // Preview component for the add modal
@@ -124,14 +210,43 @@ function LinkPreviewComponent({
   const description =
     typeof content.description === 'string' ? content.description : '';
   const url = typeof content.url === 'string' ? content.url : '';
+  const logo = typeof content.logo === 'string' ? content.logo : '';
+  const backgroundColor =
+    typeof content.backgroundColor === 'string' ? content.backgroundColor : '';
+
+  const hasCustomBackground = backgroundColor && backgroundColor !== '';
+  const containerStyle = hasCustomBackground ? { backgroundColor } : {};
 
   return (
-    <div className="p-2 border rounded text-sm">
-      <div className="font-medium">{title || 'Link Title'}</div>
-      {description && (
-        <div className="text-gray-500 text-xs mt-1">{description}</div>
-      )}
-      <div className="text-blue-500 text-xs mt-1 truncate">
+    <div
+      className={`p-3 border rounded-lg text-sm ${hasCustomBackground ? '' : 'bg-white'}`}
+      style={containerStyle}
+    >
+      <div className="flex items-start space-x-2">
+        {logo && (
+          <div className="flex-shrink-0 w-6 h-6 rounded overflow-hidden bg-white/10">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={logo} alt="Logo" className="w-full h-full object-cover" />
+          </div>
+        )}
+        <div className="flex-1 min-w-0">
+          <div
+            className={`font-medium ${hasCustomBackground ? (backgroundColor && parseInt(backgroundColor.replace('#', ''), 16) > 0x888888 ? 'text-gray-900' : 'text-white') : 'text-gray-900'}`}
+          >
+            {title || 'Link Title'}
+          </div>
+          {description && (
+            <div
+              className={`text-xs mt-1 ${hasCustomBackground ? (backgroundColor && parseInt(backgroundColor.replace('#', ''), 16) > 0x888888 ? 'text-gray-600' : 'text-gray-200') : 'text-gray-500'}`}
+            >
+              {description}
+            </div>
+          )}
+        </div>
+      </div>
+      <div
+        className={`text-xs mt-2 truncate ${hasCustomBackground ? (backgroundColor && parseInt(backgroundColor.replace('#', ''), 16) > 0x888888 ? 'text-gray-500' : 'text-gray-300') : 'text-blue-500'}`}
+      >
         {url || 'https://example.com'}
       </div>
     </div>

@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { BentoBlock, BlockFormField } from '@/types/bento';
+import { uploadFile } from '@/services/portfolio';
 import blockRegistry from '@/services/blockRegistry';
 import { FormField, FormTextarea, FormSelect, ModalButtons } from '@/utils';
 
@@ -22,7 +23,8 @@ export default function BlockEditModal({
 }: BlockEditModalProps) {
   const [editedBlock, setEditedBlock] = useState<BentoBlock>(block);
   const [isMounted, setIsMounted] = useState(false);
-  const [uploadError] = useState('');
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const [uploadingField, setUploadingField] = useState<string | null>(null);
 
   useEffect(() => {
     setIsMounted(true);
@@ -37,6 +39,32 @@ export default function BlockEditModal({
     onClose();
   };
 
+  const handleFileSelect = async (
+    e: React.ChangeEvent<HTMLInputElement>,
+    targetKey: string
+  ) => {
+    try {
+      const file = e.target.files?.[0];
+      if (!file) return;
+
+      setUploadingField(targetKey);
+      setUploadError(null);
+
+      const result = await uploadFile(file);
+      if (result.success && result.url) {
+        updateContent(targetKey, result.url);
+      } else {
+        setUploadError(result.error || 'Failed to upload image');
+      }
+    } catch (err: unknown) {
+      setUploadError('Failed to upload image');
+      console.error('Upload error:', err);
+    } finally {
+      setUploadingField(null);
+      if (e.target) e.target.value = '';
+    }
+  };
+
   const updateContent = (field: string, value: unknown) => {
     setEditedBlock(prev => ({
       ...prev,
@@ -45,21 +73,6 @@ export default function BlockEditModal({
         [field]: value,
       },
     }));
-  };
-
-  const updateTitle = (title: string) => {
-    setEditedBlock(prev => {
-      const newContent = { ...prev.content };
-      if (prev.type === 'section-header' && newContent.title !== undefined) {
-        delete newContent.title;
-      }
-
-      return {
-        ...prev,
-        title,
-        content: newContent,
-      };
-    });
   };
 
   // File upload functionality removed - using direct URL input only
@@ -83,12 +96,7 @@ export default function BlockEditModal({
       <div className="space-y-4">
         {fields.map(field => {
           const rawValue =
-            field.key === 'title'
-              ? editedBlock.title ||
-                editedBlock.content?.title ||
-                field.defaultValue ||
-                ''
-              : editedBlock.content?.[field.key] || field.defaultValue || '';
+            editedBlock.content?.[field.key] || field.defaultValue || '';
 
           // Safe type conversion based on field type
           const stringValue =
@@ -126,11 +134,7 @@ export default function BlockEditModal({
           }
 
           const updateValue = (value: unknown) => {
-            if (field.key === 'title') {
-              updateTitle(String(value));
-            } else {
-              updateContent(field.key, value);
-            }
+            updateContent(field.key, value);
           };
 
           switch (field.type) {
@@ -348,12 +352,31 @@ export default function BlockEditModal({
 
                   {/* Manual URL input */}
                   <FormField
-                    label=""
+                    label={field.key === 'logo' ? 'Logo URL' : 'Image URL'}
                     value={stringValue}
                     onChange={updateValue}
-                    placeholder="https://example.com/image.jpg"
+                    placeholder={
+                      field.key === 'logo'
+                        ? 'https://example.com/logo.png'
+                        : 'https://example.com/image.jpg'
+                    }
                     type="url"
                   />
+
+                  {/* Upload control */}
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="file"
+                      accept={field.accept || 'image/*'}
+                      onChange={e => handleFileSelect(e, field.key)}
+                      className="text-sm"
+                    />
+                    {uploadingField === field.key && (
+                      <span className="text-xs text-gray-500">
+                        Uploading...
+                      </span>
+                    )}
+                  </div>
 
                   {uploadError && (
                     <div className="flex items-center space-x-2 text-red-600 text-sm">
@@ -409,13 +432,25 @@ export default function BlockEditModal({
 
   return createPortal(
     <div className="fixed inset-0  bg-opacity-50 backdrop-blur-sm flex items-center justify-center p-4 z-[9999]">
-      <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full mx-4 overflow-hidden">
+      <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full mx-4 max-h-[85vh] flex flex-col overflow-hidden">
         {/* Header */}
-        <div className="bg-black p-4 text-white">
+        <div className="bg-black p-4 text-white sticky top-0 z-10">
           <div className="flex items-center justify-between">
             <h3 className="text-xl font-bold">
-              Edit {block.type.charAt(0).toUpperCase() + block.type.slice(1)}{' '}
-              Block
+              {(() => {
+                // Get the title from content.title (single source of truth)
+                const contentTitle = editedBlock.content?.title;
+                const displayTitle =
+                  contentTitle &&
+                  typeof contentTitle === 'string' &&
+                  contentTitle.trim() !== ''
+                    ? contentTitle.trim()
+                    : '';
+
+                return displayTitle
+                  ? `Edit "${displayTitle}"`
+                  : `Edit ${block.type.charAt(0).toUpperCase() + block.type.slice(1)} Block`;
+              })()}
             </h3>
             <button
               onClick={onClose}
@@ -427,7 +462,7 @@ export default function BlockEditModal({
         </div>
 
         {/* Content */}
-        <div className="p-6">
+        <div className="p-6 overflow-y-auto flex-1">
           {renderEditForm()}
           <ModalButtons onCancel={onClose} onSave={handleSave} />
         </div>

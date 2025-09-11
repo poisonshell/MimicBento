@@ -6,34 +6,6 @@
   },
   "blocks": [
     {
-      "id": "oLKGuzjF11NMNQea",
-      "type": "photo",
-      "title": "CTO",
-      "size": "small",
-      "position": {
-        "x": 0,
-        "y": 3
-      },
-      "content": {
-        "url": "https://picsum.photos/seed/work1/400/400",
-        "href": "#"
-      }
-    },
-    {
-      "id": "NG9vaPmxDtTrGx9Z",
-      "type": "photo",
-      "title": "CEO",
-      "size": "small",
-      "position": {
-        "x": 1,
-        "y": 3
-      },
-      "content": {
-        "url": "https://picsum.photos/seed/work2/400/400",
-        "href": "#"
-      }
-    },
-    {
       "id": "aif62Qmzf1zCUQOs",
       "type": "photo",
       "title": "Head of R&D",
@@ -43,7 +15,8 @@
         "y": 3
       },
       "content": {
-        "url": "https://picsum.photos/seed/work3/400/400"
+        "url": "https://picsum.photos/seed/work3/400/400",
+        "title": "test32"
       }
     },
     {
@@ -56,7 +29,8 @@
         "y": 3
       },
       "content": {
-        "url": "https://picsum.photos/seed/work4/400/400"
+        "url": "https://picsum.photos/seed/work4/400/400",
+        "title": "fd3"
       }
     },
     {
@@ -107,51 +81,13 @@
       "type": "map",
       "title": "New Block",
       "content": {
-        "location": "New York",
-        "zoom": 12
+        "location": "Hitadhoo",
+        "zoom": "14"
       },
-      "size": "large",
+      "size": "medium",
       "position": {
         "x": 1,
         "y": 0
-      }
-    },
-    {
-      "id": "block-1750885854682-1hpf4uk35",
-      "type": "text-header",
-      "title": "Work",
-      "content": {
-        "title": "Work",
-        "subtitle": "",
-        "textAlign": "left",
-        "textSize": "medium",
-        "color": "gray-800",
-        "showIcon": false,
-        "icon": ""
-      },
-      "size": "small",
-      "position": {
-        "x": 0,
-        "y": 2
-      }
-    },
-    {
-      "id": "block-1750885873016-gxldvddea",
-      "type": "text-header",
-      "title": "Fun",
-      "content": {
-        "title": "Projects",
-        "subtitle": "Projects",
-        "textAlign": "left",
-        "textSize": "medium",
-        "color": "black",
-        "showIcon": false,
-        "icon": "rocket"
-      },
-      "size": "header-half",
-      "position": {
-        "x": 2,
-        "y": 2
       }
     },
     {
@@ -182,6 +118,40 @@
       "position": {
         "x": 0,
         "y": 4
+      }
+    },
+    {
+      "id": "block-1757565577457-eqqj7ohub",
+      "type": "link",
+      "title": "New Block",
+      "content": {
+        "url": "seastack.mv",
+        "title": "Director",
+        "description": "",
+        "logo": "/uploads/1757565592665-defef2ba8accbc1b-logomain-copy.png",
+        "backgroundColor": ""
+      },
+      "size": "small",
+      "position": {
+        "x": 0,
+        "y": 1
+      }
+    },
+    {
+      "id": "block-1757565616568-dg0towksy",
+      "type": "link",
+      "title": "New Block",
+      "content": {
+        "url": "shallunite.com",
+        "title": "Team Lead",
+        "description": "",
+        "logo": "/uploads/1757565632733-1a6acb842115c6ae-su.webp",
+        "backgroundColor": ""
+      },
+      "size": "small",
+      "position": {
+        "x": 3,
+        "y": 1
       }
     }
   ],

@@ -6,7 +6,7 @@ import {
 } from '@/types/bento';
 
 function MusicBlockComponent({ block }: BlockComponentProps) {
-  const { content, title } = block;
+  const { content } = block;
 
   const contentRecord = content as Record<string, unknown>;
   const songTitle =
@@ -15,7 +15,7 @@ function MusicBlockComponent({ block }: BlockComponentProps) {
     typeof contentRecord.artist === 'string' ? contentRecord.artist : '';
   const url = typeof contentRecord.url === 'string' ? contentRecord.url : '';
 
-  if (!songTitle && !artist && !title) {
+  if (!songTitle && !artist) {
     return (
       <div className="flex items-center justify-center h-full text-gray-500">
         <span>Configure music details</span>
@@ -53,7 +53,7 @@ function MusicBlockComponent({ block }: BlockComponentProps) {
       </div>
       <div className="space-y-1">
         <h3 className="font-medium text-gray-900 text-sm line-clamp-2">
-          {songTitle || title || 'Untitled'}
+          {songTitle || 'Untitled'}
         </h3>
         {artist && (
           <p className="text-gray-500 text-xs line-clamp-1">{artist}</p>

@@ -115,6 +115,7 @@ export default function AddBlockModal({
   const [blockData, setBlockData] = useState<Partial<BentoBlock>>({});
   const [isUploading, setIsUploading] = useState(false);
   const [uploadError, setUploadError] = useState('');
+  const [uploadTargetKey, setUploadTargetKey] = useState<string | null>(null);
   const [availableBlocks, setAvailableBlocks] = useState<BlockConfig[]>([]);
   const [isRegistryReady, setIsRegistryReady] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -351,7 +352,8 @@ export default function AddBlockModal({
       const result = await uploadFile(file);
 
       if (result.success && result.url) {
-        updateContent('url', result.url);
+        const targetKey = uploadTargetKey || 'url';
+        updateContent(targetKey, result.url);
       } else {
         throw new Error(result.error || 'Upload failed');
       }
@@ -360,6 +362,7 @@ export default function AddBlockModal({
       setUploadError('Failed to upload file. Please try again.');
     } finally {
       setIsUploading(false);
+      setUploadTargetKey(null);
 
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
@@ -367,7 +370,8 @@ export default function AddBlockModal({
     }
   };
 
-  const triggerFileUpload = () => {
+  const triggerFileUpload = (key?: string) => {
+    if (key) setUploadTargetKey(key);
     fileInputRef.current?.click();
   };
 
@@ -655,7 +659,7 @@ export default function AddBlockModal({
                       <Upload className="mx-auto h-8 w-8 text-gray-400 mb-3" />
                       <button
                         type="button"
-                        onClick={triggerFileUpload}
+                        onClick={() => triggerFileUpload(field.key)}
                         disabled={isUploading}
                         className="inline-flex items-center px-4 py-2 bg-black text-white text-sm font-medium rounded-lg hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                       >

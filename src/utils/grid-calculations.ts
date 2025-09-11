@@ -109,16 +109,26 @@ export const isBlockCompatibleWithRow = (
     ? blocks.filter(b => b.id !== excludeBlockId)
     : blocks;
 
-  const rowConstraint = getRowHeightConstraint(relevantBlocks, targetRow);
+  const { rowSpan } = getBlockDimensions(blockSize);
   const blockHeightCategory = getHeightCategory(blockSize);
 
-  // If row is empty, any block type is allowed
-  if (rowConstraint === null) {
-    return true;
+  // For multi-row blocks (like tall blocks), check all rows they will occupy
+  for (let i = 0; i < rowSpan; i++) {
+    const rowToCheck = targetRow + i;
+    const rowConstraint = getRowHeightConstraint(relevantBlocks, rowToCheck);
+
+    // If row is empty, any block type is allowed
+    if (rowConstraint === null) {
+      continue;
+    }
+
+    // Block must match the row's height constraint
+    if (rowConstraint !== blockHeightCategory) {
+      return false;
+    }
   }
 
-  // Block must match the row's height constraint
-  return rowConstraint === blockHeightCategory;
+  return true;
 };
 
 // Get available positions for a block size considering height constraints
