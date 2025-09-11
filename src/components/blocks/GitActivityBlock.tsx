@@ -203,7 +203,7 @@ function GitActivityBlockComponent({
 
   const createDateGrid = () => {
     const today = new Date();
-    let days = 365;
+    let days: number;
 
     switch (timeframe) {
       case '3months':
@@ -346,7 +346,7 @@ function GitActivityBlockComponent({
           </div>
         ) : (
           <div className="flex-1 flex flex-col justify-center">
-            {}
+            { }
             {/* GitHub-style Contribution Graph */}
             <div
               className="flex-1 flex flex-col justify-center overflow-x-auto overflow-y-hidden"
@@ -360,7 +360,7 @@ function GitActivityBlockComponent({
                   className="w-full"
                   style={{ overflow: 'visible', tableLayout: 'auto' }}
                 >
-                  {}
+                  { }
                   <thead>
                     <tr style={{ height: '15px' }}>
                       <td style={{ width: '32px' }}>
@@ -393,7 +393,7 @@ function GitActivityBlockComponent({
                     </tr>
                   </thead>
 
-                  {}
+                  { }
                   <tbody>
                     {[0, 1, 2, 3, 4, 5, 6].map(dayIndex => (
                       <tr key={dayIndex} style={{ height: '10px' }}>
@@ -402,21 +402,21 @@ function GitActivityBlockComponent({
                           style={{ position: 'relative' }}
                         >
                           <span className="sr-only">{dayLabels[dayIndex]}</span>
-                          {}
+                          { }
                           {(dayIndex === 1 ||
                             dayIndex === 3 ||
                             dayIndex === 5) && (
-                            <span
-                              aria-hidden="true"
-                              style={{
-                                position: 'absolute',
-                                bottom: '-3px',
-                                fontSize: '10px',
-                              }}
-                            >
-                              {dayLabels[dayIndex]}
-                            </span>
-                          )}
+                              <span
+                                aria-hidden="true"
+                                style={{
+                                  position: 'absolute',
+                                  bottom: '-3px',
+                                  fontSize: '10px',
+                                }}
+                              >
+                                {dayLabels[dayIndex]}
+                              </span>
+                            )}
                         </td>
                         {weeks.map((week, weekIndex) => {
                           const day = week[dayIndex];
@@ -430,13 +430,12 @@ function GitActivityBlockComponent({
                               }}
                             >
                               <div
-                                className={`transition-colors ${
-                                  isEmpty
-                                    ? 'bg-transparent'
-                                    : day.level > 0
-                                      ? getContributionColor(day.level)
-                                      : 'bg-gray-100'
-                                }`}
+                                className={`transition-colors ${isEmpty
+                                  ? 'bg-transparent'
+                                  : day.level > 0
+                                    ? getContributionColor(day.level)
+                                    : 'bg-gray-100'
+                                  }`}
                                 style={{
                                   width: '10px',
                                   height: '10px',
@@ -577,13 +576,12 @@ function GitActivityPreviewComponent() {
             {Array.from({ length: 7 }, (_, j) => (
               <div
                 key={j}
-                className={`w-1 h-1 rounded-sm ${
-                  Math.random() > 0.7
-                    ? 'bg-green-400'
-                    : Math.random() > 0.5
-                      ? 'bg-green-200'
-                      : 'bg-gray-100'
-                }`}
+                className={`w-1 h-1 rounded-sm ${Math.random() > 0.7
+                  ? 'bg-green-400'
+                  : Math.random() > 0.5
+                    ? 'bg-green-200'
+                    : 'bg-gray-100'
+                  }`}
               />
             ))}
           </div>

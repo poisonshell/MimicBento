@@ -226,10 +226,9 @@ export const ResizeHandle: React.FC<ResizeHandleProps> = ({
         rounded-lg z-50 transition-all duration-300 ease-out
         flex items-center justify-center
         ring-1 ring-gray-200/80 hover:ring-0
-        ${
-          showResizeHints === block.id
-            ? 'opacity-100 scale-100'
-            : 'opacity-0 scale-90 group-hover:opacity-100 group-hover:scale-100'
+        ${showResizeHints === block.id
+          ? 'opacity-100 scale-100'
+          : 'opacity-0 scale-90 group-hover:opacity-100 group-hover:scale-100'
         }
         hover:scale-110 active:scale-95
         ${className}
@@ -349,13 +348,13 @@ export const ResizeHandles: React.FC<ResizeHandlesProps> = ({
         {(block.size === 'medium' ||
           block.size === 'large' ||
           block.size === 'tall') && (
-          <ResizeHandle
-            block={block}
-            direction="up"
-            showResizeHints={showResizeHints}
-            resizeHandlers={resizeHandlers}
-          />
-        )}
+            <ResizeHandle
+              block={block}
+              direction="up"
+              showResizeHints={showResizeHints}
+              resizeHandlers={resizeHandlers}
+            />
+          )}
       </div>
     </>
   );
@@ -372,10 +371,7 @@ export const useResizeKeyboardShortcuts = (
     const handleKeyDown = (e: KeyboardEvent) => {
       if (!isAdmin || !showResizeHints) return;
 
-      // Only handle keyboard shortcuts when a block is focused
-      const isBlockFocused = showResizeHints !== null;
-      if (!isBlockFocused) return;
-
+      // showResizeHints is guaranteed to be a string (block ID) at this point
       const block = blocks.find(b => b.id === showResizeHints);
       if (!block) return;
 

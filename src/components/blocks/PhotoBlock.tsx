@@ -39,11 +39,8 @@ const getImageSizing = (blockSize: string, fitMode: string = 'auto') => {
     if (blockDimensions.aspectRatio > 3) {
       // For very wide blocks (like headers), use contain to avoid cropping
       objectFitClass = 'object-contain';
-    } else if (blockDimensions.aspectRatio < 0.6) {
-      // For very tall blocks, use cover but with smart positioning
-      objectFitClass = 'object-cover';
     } else {
-      // For square-ish blocks, cover usually works best
+      // For tall and square-ish blocks, cover usually works best
       objectFitClass = 'object-cover';
     }
   }

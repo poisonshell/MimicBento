@@ -114,9 +114,7 @@ export default function BentoBlockComponent({
   const interactiveClasses =
     block.type === 'clock'
       ? 'cursor-default'
-      : isAdmin
-        ? 'cursor-pointer hover:scale-[1.02] hover:shadow-lg hover:z-30 transform transition-all duration-300 ease-out'
-        : 'cursor-pointer hover:scale-[1.02] hover:shadow-lg hover:z-30 transform transition-all duration-300 ease-out';
+      : 'cursor-pointer hover:scale-[1.02] hover:shadow-lg hover:z-30 transform transition-all duration-300 ease-out';
 
   const handleDeleteConfirm = () => {
     setIsDeleting(true);
@@ -147,19 +145,16 @@ export default function BentoBlockComponent({
 
   return (
     <div
-      className={`h-full rounded-xl transition-all duration-300 ease-out ${
-        isSection
+      className={`h-full rounded-xl transition-all duration-300 ease-out ${isSection
           ? 'bg-transparent border-0'
           : 'bg-white border border-gray-200'
-      } ${
-        isMobile
+        } ${isMobile
           ? 'hover:scale-[1.02] hover:shadow-lg hover:z-10 transform cursor-pointer'
           : `${getSizeClasses(block.size, isMobile)} ${interactiveClasses}`
-      } ${isAdmin ? 'group relative' : ''} ${isDeleting ? 'pointer-events-none opacity-50' : ''} ${
-        block.type === 'git-activity'
+        } ${isAdmin ? 'group relative' : ''} ${isDeleting ? 'pointer-events-none opacity-50' : ''} ${block.type === 'git-activity'
           ? 'overflow-x-auto overflow-y-hidden'
           : 'overflow-hidden'
-      }`}
+        }`}
       onClick={handleClick}
     >
       {renderBlockContent()}

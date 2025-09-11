@@ -64,10 +64,7 @@ export const AddButtons: React.FC<{
 }> = ({ blocks, maxRow, draggedBlock, onAddBlock }) => {
   if (!onAddBlock || draggedBlock) return null;
 
-  const occupiedCells = createOccupiedCellsMap(
-    blocks,
-    draggedBlock || undefined
-  );
+  const occupiedCells = createOccupiedCellsMap(blocks, undefined);
   const addButtons = [];
 
 

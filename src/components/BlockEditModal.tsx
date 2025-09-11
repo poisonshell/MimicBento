@@ -100,7 +100,7 @@ export default function BlockEditModal({
 
           // Safe type conversion based on field type
           const stringValue =
-            typeof rawValue === 'string' ? rawValue : String(rawValue || '');
+            typeof rawValue === 'string' ? rawValue : String(rawValue ?? '');
           const numberValue = typeof rawValue === 'number' ? rawValue : 0;
           const booleanValue = typeof rawValue === 'boolean' ? rawValue : false;
 
@@ -442,8 +442,8 @@ export default function BlockEditModal({
                 const contentTitle = editedBlock.content?.title;
                 const displayTitle =
                   contentTitle &&
-                  typeof contentTitle === 'string' &&
-                  contentTitle.trim() !== ''
+                    typeof contentTitle === 'string' &&
+                    contentTitle.trim() !== ''
                     ? contentTitle.trim()
                     : '';
 

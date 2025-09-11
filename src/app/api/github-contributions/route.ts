@@ -137,13 +137,6 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  if (!username) {
-    return NextResponse.json(
-      { error: 'Username is required' },
-      { status: 400 }
-    );
-  }
-
   let days = 365;
   switch (timeframe) {
     case '3months':
